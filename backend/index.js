@@ -46,7 +46,8 @@ app.use(
 );
 
 // ✅ Explicitly handle preflight requests
-app.options("*", cors());
+app.use(cors());
+
 
 // ========================
 // 3. Routes
