@@ -6,18 +6,21 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const adminRoutes = require("./routes/adminRoute");
 const vendorRoutes = require("./routes/vendorRoutes");
-dotenv.config();
-const userRoutes = require('./routes/userRoutes');
+const userRoutes = require("./routes/userRoutes");
 const shopRoutes = require("./routes/shopRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+const authRoutes = require("./routes/auth");
 
+dotenv.config();
 const app = express();
 
 // ========================
 // 1. Port & ENV Variables
 // ========================
 const PORT = process.env.PORT || 5000;
-const CLIENT_URLS = process.env.CLIENT_URLS?.split(",") || ["http://localhost:5173"];
+const CLIENT_URLS =
+  process.env.CLIENT_URLS?.split(",").map((url) => url.replace(/\/$/, "")) ||
+  ["http://localhost:5173"];
 
 // ========================
 // 2. Middlewares
@@ -29,62 +32,52 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || CLIENT_URLS.includes(origin)) {
+      if (!origin || CLIENT_URLS.includes(origin.replace(/\/$/, ""))) {
         callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS"));
+        console.error("❌ CORS Blocked Origin:", origin);
+        callback(new Error("Not allowed by CORS: " + origin));
       }
     },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
 
-// ========================
-// 3. Import Routes
-// ========================
-const authRoutes = require("./routes/auth");
-// Future Expansion Routes (example placeholders):
-// const productRoutes = require("./routes/productRoutes");
-// const serviceRoutes = require("./routes/serviceRoutes");
-// const orderRoutes = require("./routes/orderRoutes");
-// const vendorRoutes = require("./routes/vendorRoutes");
+// ✅ Explicitly handle preflight requests
+app.options("*", cors());
 
+// ========================
+// 3. Routes
+// ========================
 app.use("/api/admin", adminRoutes);
 app.use("/api/vendor", vendorRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/category", require("./routes/categoryRoutes"));
 app.use("/api", shopRoutes);
 app.use("/api/order", orderRoutes);
-
-
-// ========================
-// 4. Mount Routes
-// ========================
 app.use("/api/auth", authRoutes);
-// app.use("/api/products", productRoutes);
-// app.use("/api/services", serviceRoutes);
-// app.use("/api/orders", orderRoutes);
-// app.use("/api/vendors", vendorRoutes);
 
 // ========================
-// 5. Test Route
+// 4. Test Route
 // ========================
 app.get("/", (req, res) => {
   res.send("Multi-Vendor Interior E-commerce API is running 🚀");
 });
 
 // ========================
-// 6. Global Error Handling Middleware
+// 5. Global Error Handling Middleware
 // ========================
 app.use((err, req, res, next) => {
-  console.error("❌ Error:", err.stack);
+  console.error("❌ Error:", err.message);
   res.status(err.status || 500).json({
     message: err.message || "Server Error",
   });
 });
 
 // ========================
-// 7. MongoDB Connection & Server Start
+// 6. MongoDB Connection & Server Start
 // ========================
 mongoose.set("strictQuery", false);
 

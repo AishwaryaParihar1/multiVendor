@@ -1,8 +1,10 @@
+// ProductCard.jsx
 import React from "react";
 import { Heart, ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import API from "../../utils/api";
-import SweetAlertService from "../ui/SweetAlertService"; // apka alert service import
+import SweetAlertService from "../ui/SweetAlertService";
 
 export default function ProductCard({ product }) {
   const navigate = useNavigate();
@@ -47,49 +49,60 @@ export default function ProductCard({ product }) {
   };
 
   return (
-    <div className="w-56 bg-white rounded-xl shadow-lg p-4 flex flex-col hover:shadow-2xl transition-shadow duration-300 cursor-pointer group relative">
-      <div className="relative">
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      className="w-72 bg-white border border-gray-200 rounded shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer overflow-hidden"
+    >
+      {/* Image Large + Focus */}
+      <div className="relative h-72 w-full">
         <img
           src={product.images?.[0] || "/placeholder.png"}
           alt={product.name}
-          className="h-40 w-full object-cover rounded-lg transition-transform transform group-hover:scale-105"
+          className="h-full w-full object-cover"
         />
         {isLoggedIn && (
           <button
             title="Add to Wishlist"
-            className="absolute top-3 right-3 bg-white bg-opacity-70 rounded-full p-2 shadow hover:bg-accent hover:text-white transition-colors"
+            className="absolute top-3 right-3 bg-white/90 rounded-full p-2 shadow-sm 
+                       hover:bg-gray-800 hover:text-white transition-all"
             onClick={handleAddToWishlist}
           >
-            <Heart size={20} />
+            <Heart size={18} className="text-secondary" />
           </button>
         )}
       </div>
 
-      <h3
-        title={product.name}
-        className="mt-4 font-bold text-lg text-primary truncate"
-      >
-        {product.name}
-      </h3>
-      <p className="text-gray-600 text-sm line-clamp-2 mt-1 min-h-[40px]">
-        {product.description}
-      </p>
+      {/* Content minimal */}
+      <div className="p-4 flex bg-[#E5E2D9] flex-col">
+        <h3
+          className="font-medium text-sm text-gray-900 truncate"
+          title={product.name}
+        >
+          {product.name}
+        </h3>
+        <p className="text-gray-500 text-xs line-clamp-2 mt-1 min-h-[32px]">
+          {product.description}
+        </p>
 
-      <div className="mt-auto flex items-center justify-between">
-        <div className="text-accent font-extrabold text-xl">
-          ₹{product.sellingPrice}
+        {/* Price + Cart */}
+        <div className="mt-3 flex items-center justify-between">
+          <div className="text-lg font-semibold text-gray-900">
+            ₹{product.sellingPrice}
+          </div>
+          {isLoggedIn && (
+            <button
+              title="Add to Cart"
+              className="flex items-center gap-1 bg-secondary text-white px-3 py-1.5 rounded-full 
+                         text-xs font-medium hover:bg-gray-800 transition-colors"
+              onClick={handleAddToCart}
+            >
+              <ShoppingCart size={14} />
+              Add
+            </button>
+          )}
         </div>
-        {isLoggedIn && (
-          <button
-            title="Add to Cart"
-            className="flex items-center gap-1 bg-primary text-white px-3 py-1 rounded-full text-sm font-semibold hover:bg-secondary transition-colors shadow hover:shadow-lg"
-            onClick={handleAddToCart}
-          >
-            <ShoppingCart size={16} />
-            Add
-          </button>
-        )}
       </div>
-    </div>
+    </motion.div>
   );
 }
