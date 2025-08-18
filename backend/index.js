@@ -18,9 +18,8 @@ const app = express();
 // 1. Port & ENV Variables
 // ========================
 const PORT = process.env.PORT || 5000;
-const CLIENT_URLS =
-  process.env.CLIENT_URLS?.split(",").map((url) => url.replace(/\/$/, "")) ||
-  ["http://localhost:5173"];
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173"; 
+// 👆 ek hi URL allow hoga
 
 // ========================
 // 2. Middlewares
@@ -28,26 +27,13 @@ const CLIENT_URLS =
 app.use(express.json());
 app.use(cookieParser());
 
-// ✅ CORS Handling (Multiple URLs Allowed)
+// ✅ Simple CORS
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || CLIENT_URLS.includes(origin.replace(/\/$/, ""))) {
-        callback(null, true);
-      } else {
-        console.error("❌ CORS Blocked Origin:", origin);
-        callback(new Error("Not allowed by CORS: " + origin));
-      }
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    origin: CLIENT_URL,
     credentials: true,
   })
 );
-
-// ✅ Explicitly handle preflight requests
-app.use(cors());
-
 
 // ========================
 // 3. Routes
