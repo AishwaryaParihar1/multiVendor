@@ -1,11 +1,26 @@
 import React, { useEffect, useState } from "react";
 import API from "../../utils/api";
 import SweetAlertService from "../ui/SweetAlertService";
+import {
+  Box,
+  Typography,
+  TextField,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  FormControl,
+  FormLabel,
+  Button,
+  CircularProgress,
+  Divider,
+  useTheme,
+} from "@mui/material";
 
 export default function CheckoutPage() {
   const [cart, setCart] = useState({ items: [] });
   const [loading, setLoading] = useState(true);
   const [placingOrder, setPlacingOrder] = useState(false);
+  const theme = useTheme();
 
   const [form, setForm] = useState({
     fullName: "",
@@ -68,7 +83,6 @@ export default function CheckoutPage() {
     if (!validateForm()) return;
     setPlacingOrder(true);
     try {
-      // Example POST payload - adjust according to your backend API
       const orderData = {
         cartId: cart._id,
         shippingDetails: { ...form },
@@ -76,7 +90,7 @@ export default function CheckoutPage() {
       };
       await API.post("/order/create", orderData);
       SweetAlertService.showSuccess("Order placed successfully!");
-      setCart({ items: [] }); // Clear cart locally (optional)
+      setCart({ items: [] });
     } catch {
       SweetAlertService.showError("Failed to place order. Please try again.");
     } finally {
@@ -86,162 +100,281 @@ export default function CheckoutPage() {
 
   if (loading)
     return (
-      <div className="p-6 text-center text-gray-700">
-        <h2 className="text-2xl font-semibold">Loading your cart...</h2>
-      </div>
+      <Box
+        sx={{
+          p: 6,
+          textAlign: "center",
+          color: theme.palette.text.secondary,
+        }}
+      >
+        <CircularProgress />
+        <Typography mt={2} variant="h6">
+          Loading your cart...
+        </Typography>
+      </Box>
     );
 
   if (cart.items.length === 0)
     return (
-      <div className="p-6 text-center text-gray-700">
-        <h2 className="text-2xl font-semibold">Your cart is empty</h2>
-        <p>Add products to cart before checkout.</p>
-      </div>
+      <Box
+        sx={{
+          p: 6,
+          textAlign: "center",
+          color: theme.palette.text.secondary,
+        }}
+      >
+        <Typography variant="h4" gutterBottom>
+          Your cart is empty
+        </Typography>
+        <Typography>Add products to cart before checkout.</Typography>
+      </Box>
     );
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-lg mt-10">
-      <h1 className="text-3xl font-bold mb-8 text-primary text-center">Checkout</h1>
+    <Box
+      sx={{
+        maxWidth: 900,
+        mx: "auto",
+        p: { xs: 3, md: 6 },
+        bgcolor: "background.paper",
+        borderRadius: 2,
+        boxShadow: 3,
+        mt: { xs: 5, md: 10 },
+      }}
+    >
+      <Typography
+        variant="h4"
+        fontWeight="bold"
+        textAlign="center"
+        color="primary.main"
+        mb={6}
+      >
+        Checkout
+      </Typography>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+          gap: 6,
+          justifyContent: { xs: "center", md: "unset" }, // Center form on small screens
+        }}
+      >
         {/* Shipping Details Form */}
-        <form className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Shipping Details</h2>
+        <Box
+          component="form"
+          noValidate
+          autoComplete="off"
+          sx={{
+            width: { xs: "100%", sm: 400 }, // Limit width and center on small screens
+            mx: { xs: "auto", md: 0 },
+          }}
+        >
+          <Typography variant="h6" fontWeight="600" mb={3}>
+            Shipping Details
+          </Typography>
 
-          <input
-            type="text"
+          <TextField
+            fullWidth
+            label="Full Name"
             name="fullName"
-            placeholder="Full Name"
             value={form.fullName}
             onChange={handleChange}
-            className="w-full p-3 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-accent"
+            margin="normal"
+            variant="outlined"
             required
           />
-
-          <textarea
+          <TextField
+            fullWidth
+            label="Address"
             name="address"
-            placeholder="Address"
             value={form.address}
             onChange={handleChange}
+            margin="normal"
+            variant="outlined"
+            multiline
             rows={3}
-            className="w-full p-3 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-accent resize-none"
             required
           />
-
-          <input
-            type="text"
+          <TextField
+            fullWidth
+            label="City"
             name="city"
-            placeholder="City"
             value={form.city}
             onChange={handleChange}
-            className="w-full p-3 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-accent"
+            margin="normal"
+            variant="outlined"
             required
           />
-
-          <input
-            type="text"
+          <TextField
+            fullWidth
+            label="State/Province"
             name="state"
-            placeholder="State/Province"
             value={form.state}
             onChange={handleChange}
-            className="w-full p-3 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-accent"
+            margin="normal"
+            variant="outlined"
             required
           />
-
-          <input
-            type="text"
+          <TextField
+            fullWidth
+            label="Country"
             name="country"
-            placeholder="Country"
             value={form.country}
             onChange={handleChange}
-            className="w-full p-3 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-accent"
+            margin="normal"
+            variant="outlined"
             required
           />
-
-          <input
-            type="text"
+          <TextField
+            fullWidth
+            label="Postal Code"
             name="postalCode"
-            placeholder="Postal Code"
             value={form.postalCode}
             onChange={handleChange}
-            className="w-full p-3 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-accent"
+            margin="normal"
+            variant="outlined"
             required
           />
-
-          <input
-            type="tel"
+          <TextField
+            fullWidth
+            label="Phone Number"
             name="phone"
-            placeholder="Phone Number"
             value={form.phone}
             onChange={handleChange}
-            className="w-full p-3 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-accent"
+            margin="normal"
+            variant="outlined"
             required
           />
 
-          <h2 className="mt-6 mb-2 text-xl font-semibold text-gray-800">Payment Method</h2>
-          <div className="flex flex-col gap-2">
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="radio"
-                name="paymentMethod"
+          <FormControl component="fieldset" sx={{ mt: 4 }}>
+            <FormLabel component="legend" sx={{ mb: 2, fontWeight: "600" }}>
+              Payment Method
+            </FormLabel>
+            <RadioGroup
+              name="paymentMethod"
+              value={form.paymentMethod}
+              onChange={handleChange}
+            >
+              <FormControlLabel
                 value="cod"
-                checked={form.paymentMethod === "cod"}
-                onChange={handleChange}
-                className="form-radio"
+                control={<Radio />}
+                label="Cash on Delivery"
               />
-              <span>Cash on Delivery</span>
-            </label>
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input
-                type="radio"
-                name="paymentMethod"
+              <FormControlLabel
                 value="card"
-                checked={form.paymentMethod === "card"}
-                onChange={handleChange}
-                className="form-radio"
+                control={<Radio />}
+                label="Credit/Debit Card"
               />
-              <span>Credit/Debit Card</span>
-            </label>
-          </div>
-        </form>
+            </RadioGroup>
+          </FormControl>
+        </Box>
 
         {/* Order Summary */}
-        <div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Order Summary</h2>
-          <ul className="divide-y divide-gray-200 max-h-[60vh] overflow-auto">
+        <Box>
+          <Typography variant="h6" fontWeight="600" mb={3}>
+            Order Summary
+          </Typography>
+
+          <Box
+            sx={{
+              maxHeight: "60vh",
+              overflowY: "auto",
+              border: `1px solid ${theme.palette.divider}`,
+              borderRadius: 1,
+              px: 2,
+              py: 1,
+              mb: 4,
+            }}
+          >
             {cart.items.map(({ product, quantity }) => (
-              <li key={product._id} className="flex items-center py-4 gap-4">
-                <img
+              <Box
+                key={product._id}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  py: 2,
+                  borderBottom: `1px solid ${theme.palette.divider}`,
+                  "&:last-child": {
+                    borderBottom: "none",
+                  },
+                }}
+              >
+                <Box
+                  component="img"
                   src={product.images?.[0] || "/placeholder.png"}
                   alt={product.name}
-                  className="w-20 h-20 rounded object-cover flex-shrink-0"
+                  sx={{
+                    width: 64,
+                    height: 64,
+                    objectFit: "cover",
+                    borderRadius: 1,
+                    flexShrink: 0,
+                  }}
                 />
-                <div className="flex-grow">
-                  <h3 className="font-semibold text-lg">{product.name}</h3>
-                  <p className="text-gray-600 line-clamp-2">{product.description}</p>
-                  <p className="mt-1 text-sm text-gray-700">Qty: {quantity}</p>
-                </div>
-                <div className="text-lg font-bold text-accent">
+                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                  <Typography
+                    fontWeight="600"
+                    noWrap
+                    title={product.name}
+                    sx={{ fontSize: "1rem" }}
+                  >
+                    {product.name}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    noWrap
+                    title={product.description}
+                    sx={{ fontSize: "0.85rem" }}
+                  >
+                    {product.description}
+                  </Typography>
+                  <Typography variant="body2" fontWeight="bold" sx={{ mt: 0.5 }}>
+                    Qty: {quantity}
+                  </Typography>
+                </Box>
+                <Typography
+                  fontWeight="bold"
+                  sx={{ whiteSpace: "nowrap", minWidth: 75 }}
+                >
                   ₹{(product.sellingPrice * quantity).toFixed(2)}
-                </div>
-              </li>
+                </Typography>
+              </Box>
             ))}
-          </ul>
+          </Box>
 
-          <div className="mt-6 border-t pt-4 flex justify-between text-2xl font-bold text-gray-900">
-            <span>Total:</span>
-            <span>₹{totalAmount.toFixed(2)}</span>
-          </div>
+          <Divider sx={{ mb: 3 }} />
 
-          <button
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 3,
+            }}
+          >
+            <Typography variant="h5" fontWeight="bold" color="text.primary">
+              Total:
+            </Typography>
+            <Typography variant="h5" fontWeight="bold" color="text.primary">
+              ₹{totalAmount.toFixed(2)}
+            </Typography>
+          </Box>
+
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            size="large"
             onClick={placeOrder}
             disabled={placingOrder}
-            className="mt-8 w-full py-4 bg-primary text-white rounded-xl hover:bg-secondary transition-colors text-lg font-semibold"
           >
             {placingOrder ? "Placing Order..." : "Place Order"}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Button>
+        </Box>
+      </Box>
+    </Box>
   );
 }

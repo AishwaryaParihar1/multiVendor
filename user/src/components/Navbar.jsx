@@ -2,9 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   User2,
-  LogOut,
-  Menu,
-  X,
+  Menu as MenuIcon,
+  X as CloseIcon,
   Search,
   Heart,
   ShoppingCart,
@@ -14,10 +13,26 @@ import { gsap } from "gsap";
 import API from "../utils/api";
 import logo from "../assets/logo.png";
 
+import AppBar from "@mui/material/AppBar";
+import Toolbar from "@mui/material/Toolbar";
+import IconButton from "@mui/material/IconButton";
+import Button from "@mui/material/Button";
+import Tooltip from "@mui/material/Tooltip";
+import Badge from "@mui/material/Badge";
+import Stack from "@mui/material/Stack";
+import Box from "@mui/material/Box";
+import Drawer from "@mui/material/Drawer";
+
+const navLinks = [
+  { name: "Home", path: "/" },
+  { name: "Shop", path: "/shop" },
+  { name: "About", path: "/about" },
+  { name: "Contact", path: "/contact" },
+];
+
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
   const navigate = useNavigate();
@@ -34,7 +49,7 @@ export default function Navbar() {
     }
   };
 
-  // Fetch cart and wishlist counts for badge display
+  // Fetch counts for cart & wishlist
   const fetchCounts = async () => {
     if (!localStorage.getItem("token")) {
       setCartCount(0);
@@ -56,12 +71,11 @@ export default function Navbar() {
     }
   };
 
-  // Initialize on mount and listen to storage changes
   useEffect(() => {
     gsap.fromTo(
       logoRef.current,
       { opacity: 0, y: -20 },
-      { opacity: 1, y: 0, duration: 1 }
+      { opacity: 1, y: 0, duration: 0.8 }
     );
     loadUserFromStorage();
     fetchCounts();
@@ -82,309 +96,352 @@ export default function Navbar() {
     setCartCount(0);
     setWishlistCount(0);
     navigate("/");
+    setMenuOpen(false);
   };
-
-  const navLinks = [
-    { name: "Home", path: "/" },
-    { name: "Shop", path: "/shop" },
-    { name: "About", path: "/about" },
-    { name: "Contact", path: "/contact" },
-  ];
-
-  // Search submit handler
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (searchTerm.trim()) {
-      navigate(`/shop?search=${encodeURIComponent(searchTerm.trim())}`);
-      setMenuOpen(false);
-    }
-  };
-
-  const iconBtnClass =
-    "relative w-10 h-10 flex items-center justify-center rounded-full bg-white text-primary shadow hover:bg-accent hover:text-white transition";
 
   return (
-    <nav className="bg-primary text-white shadow-lg fixed top-0 left-0 right-0 z-50">
-      <div className="max-w-full mx-auto px-6 md:px-10 lg:px-20">
-        <div className="flex items-center justify-between h-16">
-          {/* Brand Logo & Name */}
-          <div
-            className="flex items-center cursor-pointer hover:opacity-90 transition"
-            ref={logoRef}
+    <>
+      <AppBar
+        position="fixed"
+        sx={{
+          backgroundColor: "#004030",
+          color: "#FFF9E5",
+          boxShadow: "0 4px 8px rgba(0,64,48,0.2)",
+          minHeight: { xs: 56, md: 64 },
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+        }}
+      >
+        <Toolbar
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            px: { xs: 1, md: 4, lg: 8 },
+          }}
+        >
+          {/* Left: Logo */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              minWidth: 120,
+              cursor: "pointer",
+            }}
             onClick={() => navigate("/")}
+            ref={logoRef}
             aria-label="Homepage"
           >
-            <img src={logo} alt="Logo" className="h-10 w-10 mr-2" />
-            <span className="font-extrabold text-2xl select-none tracking-wider text-gradient-primary">
-              MultiCvero
-            </span>
-          </div>
-
-          {/* Desktop Nav Links + Search + Icons */}
-          <div className="hidden md:flex items-center space-x-8">
-            {/* Nav Links */}
-            <div className="flex space-x-6 items-center">
-              {navLinks.map(({ name, path }) => (
-                <NavLink
-                  key={name}
-                  to={path}
-                  className={({ isActive }) =>
-                    `relative px-3 py-2 font-semibold text-base transition-colors ${
-                      isActive ? "text-accent" : "hover:text-accent"
-                    }`
-                  }
-                >
-                  {name}
-                  <span
-                    className="absolute left-0 -bottom-1 w-full h-0.5 bg-accent scale-x-0 origin-left transition-transform pointer-events-none"
-                    aria-hidden="true"
-                  />
-                </NavLink>
-              ))}
-            </div>
-
-            {/* Search bar */}
-            <form
-              onSubmit={handleSearchSubmit}
-              className="flex items-center bg-white rounded-md shadow-inner px-3 py-1 ml-3"
-              role="search"
-              aria-label="Site search"
-            >
-              <input
-                type="search"
-                placeholder="Search products..."
-                aria-label="Search products"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="outline-none text-gray-800 placeholder-gray-400 w-40 md:w-56"
-              />
-              <button
-                type="submit"
-                className="text-primary ml-2 hover:text-primary-dark transition"
-                aria-label="Search"
-              >
-                <Search size={18} />
-              </button>
-            </form>
-
-            {/* Wishlist Icon with Badge */}
-            <Link to="/wishlist" className={iconBtnClass} aria-label="Wishlist">
-              <Heart size={20} />
-              {wishlistCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-accent text-primary rounded-full px-1.5 text-xs font-bold pointer-events-none">
-                  {wishlistCount}
-                </span>
-              )}
-            </Link>
-
-            {/* Cart Icon with Badge */}
-            <Link to="/cart" className={iconBtnClass} aria-label="Cart">
-              <ShoppingCart size={20} />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-accent text-primary rounded-full px-1.5 text-xs font-bold pointer-events-none">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-
-            {/* My Orders Icon */}
-            <Link to="/my-orders" className={iconBtnClass} aria-label="My Orders">
-              <ClipboardList size={20} />
-            </Link>
-          </div>
-
-          {/* Right Side User/Profile or Login/Register + Logout Button */}
-          <div className="flex items-center space-x-3">
-            {user ? (
-              <div className="flex items-center space-x-3">
-                <button
-                  className="flex items-center hover:text-accent focus:outline-none transition"
-                  onClick={() => navigate("/user/profile")}
-                  aria-label="User Profile"
-                >
-                  <User2 size={24} />
-                  <span className="hidden sm:inline-block font-medium">{user.name}</span>
-                </button>
-                <button
-                  onClick={handleLogout}
-                  className="px-3 py-1 rounded bg-secondary hover:bg-accent text-white text-xs font-semibold transition ml-1"
-                  aria-label="Logout"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <div className="hidden sm:flex space-x-2">
-                <Link
-                  to="/login"
-                  className="px-3 py-1 rounded-md bg-accent text-primary font-semibold hover:bg-accent/90 transition"
-                >
-                  Login/Register
-                </Link>
-              </div>
-            )}
-
-            {/* Cart, Wishlist, My Orders Icons (Mobile) */}
-            <Link
-              to="/wishlist"
-              className={`${iconBtnClass} md:hidden mx-1`}
-              aria-label="Wishlist"
-              title="Wishlist"
-            >
-              <Heart size={20} />
-              {wishlistCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-accent text-primary rounded-full px-1.5 text-xs font-bold pointer-events-none">
-                  {wishlistCount}
-                </span>
-              )}
-            </Link>
-            <Link
-              to="/cart"
-              className={`${iconBtnClass} md:hidden mx-1`}
-              aria-label="Cart"
-              title="Cart"
-            >
-              <ShoppingCart size={20} />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-accent text-primary rounded-full px-1.5 text-xs font-bold pointer-events-none">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-            <Link
-              to="/my-orders"
-              className={`${iconBtnClass} md:hidden mx-1`}
-              aria-label="My Orders"
-              title="My Orders"
-            >
-              <ClipboardList size={20} />
-            </Link>
-
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="md:hidden p-2 rounded hover:bg-accent/30 transition"
-              aria-label="Toggle menu"
-              aria-expanded={menuOpen}
-            >
-              {menuOpen ? <X size={26} /> : <Menu size={26} />}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile menu */}
-      {menuOpen && (
-        <div className="md:hidden bg-primary px-6 py-6 space-y-4 shadow-inner">
-          {/* Search bar */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (searchTerm.trim()) {
-                navigate(`/shop?search=${encodeURIComponent(searchTerm.trim())}`);
-                setMenuOpen(false);
-              }
-            }}
-            className="flex items-center bg-white rounded-md px-3 py-1 w-full mb-2"
-          >
-            <input
-              type="search"
-              placeholder="Search products..."
-              aria-label="Search products"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-grow outline-none text-gray-700 placeholder-gray-400"
+            <img
+              src={logo}
+              alt="Logo"
+              style={{ height: 36, width: 36, borderRadius: 6 }}
             />
-            <button
-              type="submit"
-              className="text-primary hover:text-primary-dark ml-3 transition"
-              aria-label="Search"
+            <Box
+              component="span"
+              sx={{
+                fontWeight: 800,
+                fontSize: { xs: "1.1rem", md: "1.3rem" },
+                letterSpacing: 1.2,
+                ml: 2,
+                color: "#CBAF7A",
+                userSelect: "none",
+              }}
             >
-              <Search size={18} />
-            </button>
-          </form>
+              MultiCvero
+            </Box>
+          </Box>
 
-          {/* Wishlist, Cart, MyOrder mobile links */}
-          <div className="flex gap-4 mb-3">
-            <Link to="/wishlist" className={iconBtnClass} aria-label="Wishlist" title="Wishlist">
-              <Heart size={20} />
-              {wishlistCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-accent text-primary rounded-full px-1.5 text-xs font-bold pointer-events-none">
-                  {wishlistCount}
-                </span>
-              )}
-            </Link>
-            <Link to="/cart" className={iconBtnClass} aria-label="Cart" title="Cart">
-              <ShoppingCart size={20} />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-accent text-primary rounded-full px-1.5 text-xs font-bold pointer-events-none">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-            <Link to="/my-orders" className={iconBtnClass} aria-label="My Orders" title="My Orders">
-              <ClipboardList size={20} />
-            </Link>
-          </div>
+          {/* Center: Nav links (desktop only) */}
+          <Box
+            sx={{
+              display: { xs: "none", md: "flex" },
+              gap: 2,
+              alignItems: "center",
+              flexGrow: 1,
+              justifyContent: "center",
+            }}
+          >
+            {navLinks.map(({ name, path }) => (
+              <Button
+                key={name}
+                component={NavLink}
+                to={path}
+                sx={{
+                  color: "#FFF9E5",
+                  fontWeight: 600,
+                  fontSize: "1.05rem",
+                  px: 2,
+                  textTransform: "none",
+                  letterSpacing: "0.05em",
+                  transition: "color 0.3s",
+                  "&.active": { color: "#CBAF7A" },
+                }}
+                onClick={() => setMenuOpen(false)}
+              >
+                {name}
+              </Button>
+            ))}
+          </Box>
 
+          {/* Right side: Icons + User + Menu toggle */}
+          <Stack direction="row" spacing={1.5} alignItems="center">
+            {/* Desktop Icons */}
+            <Tooltip title="Wishlist" arrow>
+              <IconButton
+                component={Link}
+                to="/wishlist"
+                color="inherit"
+                sx={{ display: { xs: "none", md: "flex" } }}
+              >
+                <Badge badgeContent={wishlistCount} color="secondary">
+                  <Heart size={19} />
+                </Badge>
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Cart" arrow>
+              <IconButton
+                component={Link}
+                to="/cart"
+                color="inherit"
+                sx={{ display: { xs: "none", md: "flex" } }}
+              >
+                <Badge badgeContent={cartCount} color="secondary">
+                  <ShoppingCart size={19} />
+                </Badge>
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Orders" arrow>
+              <IconButton
+                component={Link}
+                to="/my-orders"
+                color="inherit"
+                sx={{ display: { xs: "none", md: "flex" } }}
+              >
+                <ClipboardList size={18} />
+              </IconButton>
+            </Tooltip>
+
+            {/* User Section */}
+            <Tooltip title={user ? "Profile" : "Login/Register"} arrow>
+              {user ? (
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Button
+                    startIcon={<User2 size={20} />}
+                    onClick={() => navigate("/user/profile")}
+                    sx={{
+                      color: "white",
+                      fontWeight: 600,
+                      fontSize: "0.95rem",
+                      textTransform: "none",
+                      "&:hover": { color: "#CBAF7A" },
+                    }}
+                    aria-label="Go to user profile"
+                  >
+                    {user.name}
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={handleLogout}
+                    sx={{
+                      bgcolor: "#4E5D45",
+                      textTransform: "none",
+                      fontSize: "0.9rem",
+                      px: 2,
+                      "&:hover": { bgcolor: "#CBAF7A", color: "#004030" },
+                    }}
+                    aria-label="Logout"
+                  >
+                    Logout
+                  </Button>
+                </Stack>
+              ) : (
+                <Button
+                  component={Link}
+                  to="/login"
+                  sx={{
+                    bgcolor: "#CBAF7A",
+                    color: "#004030",
+                    fontWeight: 600,
+                    textTransform: "none",
+                    px: 2,
+                  }}
+                  aria-label="Login"
+                >
+                  Login
+                </Button>
+              )}
+            </Tooltip>
+
+            {/* Mobile menu toggle */}
+            <IconButton
+              edge="end"
+              color="inherit"
+              aria-label="toggle menu"
+              onClick={() => setMenuOpen(!menuOpen)}
+              sx={{
+                display: { xs: "flex", md: "none" },
+                ml: 1,
+                backgroundColor: "#CBAF7A",
+                color: "#004030",
+                boxShadow: "0 2px 8px rgba(203,175,122,0.3)",
+              }}
+            >
+              {menuOpen ? <CloseIcon size={22} /> : <MenuIcon size={22} />}
+            </IconButton>
+          </Stack>
+        </Toolbar>
+      </AppBar>
+
+      {/* Mobile Drawer */}
+      <Drawer
+        anchor="right"
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        PaperProps={{
+          sx: {
+            backgroundColor: "#004030",
+            width: 260,
+            paddingX: 2,
+            paddingY: 4,
+          },
+        }}
+      >
+        <Stack direction="column" spacing={2} sx={{mt: 3}} >
           {/* Navigation Links */}
           {navLinks.map(({ name, path }) => (
-            <NavLink
+            <Button
               key={name}
+              component={NavLink}
               to={path}
               onClick={() => setMenuOpen(false)}
-              className={({ isActive }) =>
-                `block px-4 py-2 rounded font-semibold text-base text-center transition-colors duration-200 ${
-                  isActive
-                    ? "bg-accent text-primary"
-                    : "hover:bg-accent hover:text-primary text-white"
-                }`
-              }
+              sx={{
+                color: "white",
+                fontWeight: 600,
+                textTransform: "none",
+                paddingY: 1,
+                borderRadius: 1,
+                "&.active": {
+                  bgcolor: "#CBAF7A",
+                  color: "#004030",
+                  fontWeight: 700,
+                },
+                "&:hover": {
+                  bgcolor: "#CBAF7A",
+                  color: "#004030",
+                },
+              }}
             >
               {name}
-            </NavLink>
+            </Button>
           ))}
 
-          {/* User or guest links */}
+          {/* Mobile Icons */}
+          <Stack direction="row" spacing={2} justifyContent="center" mt={2}>
+            <Tooltip title="Wishlist" arrow>
+              <IconButton
+                component={Link}
+                to="/wishlist"
+                aria-label="Wishlist"
+                onClick={() => setMenuOpen(false)}
+                sx={{
+                  backgroundColor: "white",
+                  color: "#004030",
+                  "&:hover": { backgroundColor: "#CBAF7A", color: "#004030" },
+                }}
+              >
+                <Badge badgeContent={wishlistCount} color="secondary" overlap="circular">
+                  <Heart size={20} />
+                </Badge>
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip title="Cart" arrow>
+              <IconButton
+                component={Link}
+                to="/cart"
+                aria-label="Cart"
+                onClick={() => setMenuOpen(false)}
+                sx={{
+                  backgroundColor: "white",
+                  color: "#004030",
+                  "&:hover": { backgroundColor: "#CBAF7A", color: "#004030" },
+                }}
+              >
+                <Badge badgeContent={cartCount} color="secondary" overlap="circular">
+                  <ShoppingCart size={20} />
+                </Badge>
+              </IconButton>
+            </Tooltip>
+
+            <Tooltip title="Orders" arrow>
+              <IconButton
+                component={Link}
+                to="/my-orders"
+                aria-label="My Orders"
+                onClick={() => setMenuOpen(false)}
+                sx={{
+                  backgroundColor: "white",
+                  color: "#004030",
+                  "&:hover": { backgroundColor: "#CBAF7A", color: "#004030" },
+                }}
+              >
+                <ClipboardList size={20} />
+              </IconButton>
+            </Tooltip>
+          </Stack>
+
+          {/* Mobile User */}
           {user ? (
-            <>
-              <Link
+            <Stack direction="column" spacing={1} mt={2}>
+              <Button
+                component={Link}
                 to={`/${user.role}/dashboard`}
                 onClick={() => setMenuOpen(false)}
-                className="block px-4 py-2 rounded font-semibold text-center hover:bg-accent hover:text-primary transition text-white"
+                sx={{
+                  color: "white",
+                  textTransform: "none",
+                  fontWeight: 600,
+                  "&:hover": { bgcolor: "#CBAF7A", color: "#004030" },
+                }}
               >
                 Dashboard
-              </Link>
-              <button
+              </Button>
+              <Button
                 onClick={() => {
                   handleLogout();
                   setMenuOpen(false);
                 }}
-                className="block w-full text-left px-4 py-2 rounded font-semibold text-red-400 hover:bg-red-300 transition"
+                sx={{
+                  color: "#d32f2f",
+                  textTransform: "none",
+                  fontWeight: 600,
+                  "&:hover": { bgcolor: "#fbdde0" },
+                }}
               >
                 Logout
-              </button>
-            </>
+              </Button>
+            </Stack>
           ) : (
-            <>
-              <Link
-                to="/login"
-                onClick={() => setMenuOpen(false)}
-                className="block px-4 py-2 rounded font-semibold text-center hover:bg-accent hover:text-primary transition text-white"
-              >
-                Login
-              </Link>
-              <Link
-                to="/register"
-                onClick={() => setMenuOpen(false)}
-                className="block px-4 py-2 rounded font-semibold text-center hover:bg-accent hover:text-primary transition text-white"
-              >
-                Register
-              </Link>
-            </>
+            <Button
+              component={Link}
+              to="/login"
+              onClick={() => setMenuOpen(false)}
+              sx={{
+                bgcolor: "#CBAF7A",
+                color: "#004030",
+                fontWeight: 600,
+                textTransform: "none",
+                "&:hover": { bgcolor: "#b99b69" },
+              }}
+            >
+              Login
+            </Button>
           )}
-        </div>
-      )}
-    </nav>
+        </Stack>
+      </Drawer>
+
+      {/* Spacer to push content below navbar */}
+      <Toolbar />
+    </>
   );
 }

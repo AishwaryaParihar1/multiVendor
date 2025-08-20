@@ -2,6 +2,39 @@ import React, { useEffect, useState } from "react";
 import HorizontalSection from "./HorizontalSection";
 import API from "../../utils/api";
 import HomeMiddleSection from "./HomeMiddleSection";
+import { Box, Typography } from "@mui/material";
+import HomeThird from "./HomeThird";
+
+const SectionHeader = ({ children }) => (
+  <Box
+    mb={1}
+    textAlign="center"
+    sx={{ display: "inline-block", width: "100%" }}
+  >
+    <Typography
+      variant="h4"
+      component="h2"
+      sx={{
+        fontFamily: "'Cinzel', serif",
+        fontWeight: "bold",
+        color: "primary.main",
+        letterSpacing: 1.3,
+        mb: 1,
+      }}
+    >
+      {children}
+    </Typography>
+    <Box
+    sx={{
+    width: "100vw",   // viewport full width
+    maxWidth: "100vw", // restrict max width same as viewport
+    marginLeft: "calc(-50vw + 50%)",  // remove parent centered container padding effect
+    px: 0,  // no padding
+    backgroundColor: "background.default",
+  }}
+    />
+  </Box>
+);
 
 export default function HomeSections() {
   const [trending, setTrending] = useState([]);
@@ -14,41 +47,32 @@ export default function HomeSections() {
     API.get("/products/best-seller").then((res) => setBestSeller(res.data));
   }, []);
 
-  const SectionHeader = ({ children }) => (
-    <div className="mb-4">
-      <h2
-        className={`
-          text-3xl font-cinzel text-center font-bold text-secondary
-        `}
-      >
-        {children}
-      </h2>
-      <div className="w-20 h-1 bg-accent mx-auto mt-2 rounded-full"></div>
-    </div>
-  );
-
   return (
-    <div className="bg-background">
-      {/* Trending Section */}
-      <div className="px-6 md:px-12 lg:px-20 py-8">
-        <SectionHeader>Trending</SectionHeader>
-        <HorizontalSection products={trending} />
-      </div>
+    <Box sx={{ backgroundColor: "background.default" }}>
+   <Box sx={{ width: "99%", py: 1, px: 6 }}>
+  <SectionHeader>Trending</SectionHeader>
+  <HorizontalSection products={trending} />
+</Box>
 
-      {/* Full Width Middle Section */}
-      <HomeMiddleSection />
 
-      {/* New Arrivals Section */}
-      <div className="px-6 md:px-12 lg:px-20 py-8">
+      <Box sx={{ width: "100%", py: 2 }}>
+        <HomeMiddleSection />
+      </Box>
+
+    <Box sx={{ width: "99%", py: 1, px: 6 }}>
         <SectionHeader>New Arrivals</SectionHeader>
         <HorizontalSection products={newArrivals} />
-      </div>
+      </Box>
+ <Box sx={{ width: "100%", py: 2 }}>
+        <HomeThird />
+      </Box>
 
-      {/* Best Sellers Section */}
-      <div className="px-6 md:px-12 lg:px-20 py-8">
+      
+
+      <Box sx={{ width: "99%", py: 1, px: 6 }}>
         <SectionHeader>Best Sellers</SectionHeader>
         <HorizontalSection products={bestSeller} />
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

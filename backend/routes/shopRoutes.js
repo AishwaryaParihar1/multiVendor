@@ -10,6 +10,8 @@ const authMiddleware = require("../middleware/authMiddleware");
 router.get("/products/trending", productController.getTrendingProducts);
 router.get("/products/new-arrival", productController.getNewArrivalProducts);
 router.get("/products/best-seller", productController.getBestSellerProducts);
+router.get("products/all", productController.getAllProducts);
+router.get("/products/:id", productController.getProductById);
 
 // Cart routes (authenticated)
 router.get("/cart", authMiddleware.protect, cartController.getCart);

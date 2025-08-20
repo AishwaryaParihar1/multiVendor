@@ -10,6 +10,9 @@ const userRoutes = require("./routes/userRoutes");
 const shopRoutes = require("./routes/shopRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const authRoutes = require("./routes/auth");
+const productRoutes = require("./routes/productRoutes");
+
+
 
 dotenv.config();
 const app = express();
@@ -45,6 +48,7 @@ app.use("/api/category", require("./routes/categoryRoutes"));
 app.use("/api", shopRoutes);
 app.use("/api/order", orderRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api", productRoutes);
 
 // ========================
 // 4. Test Route

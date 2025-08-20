@@ -1,10 +1,23 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import SweetAlertService from "../ui/SweetAlertService"; // Adjust import path
+import {
+  Box,
+  Typography,
+  Paper,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  CircularProgress,
+  useTheme,
+} from "@mui/material";
+import SweetAlertService from "../ui/SweetAlertService";
 
 export default function Vendors() {
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const theme = useTheme();
 
   const fetchVendors = async () => {
     setLoading(true);
@@ -14,7 +27,7 @@ export default function Vendors() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setVendors(res.data);
-    } catch (error) {
+    } catch {
       SweetAlertService.showError("Failed to load vendors");
     } finally {
       setLoading(false);
@@ -26,35 +39,46 @@ export default function Vendors() {
   }, []);
 
   return (
-    <div className="p-6 bg-gray-100 overflow-x-auto w-full">
-      <h2 className="text-xl font-bold text-primary mb-4">Approved Vendors</h2>
+    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: theme.palette.background.default, width: "100%", maxWidth: 1400, mx: "auto" }}>
+      <Typography variant="h5" fontWeight="bold" mb={3} color={theme.palette.primary.main} align="center">
+        Approved Vendors
+      </Typography>
 
       {loading ? (
-        <p>Loading vendors...</p>
+        <Box sx={{ display: "flex", justifyContent: "center", py: 5 }}>
+          <CircularProgress color="primary" />
+          <Typography sx={{ ml: 2 }} variant="body1" color="text.secondary">
+            Loading vendors...
+          </Typography>
+        </Box>
       ) : vendors.length === 0 ? (
-        <p className="text-secondary">No approved vendors found.</p>
+        <Typography align="center" variant="body1" color="text.secondary" sx={{ py: 5 }}>
+          No approved vendors found.
+        </Typography>
       ) : (
-        <table className="w-full bg-white rounded-md shadow overflow-hidden">
-          <thead>
-            <tr>
-              <th className="text-left px-4 py-2 border-b border-gray-300">Name</th>
-              <th className="text-left px-4 py-2 border-b border-gray-300">Business Name</th>
-              <th className="text-left px-4 py-2 border-b border-gray-300">Email</th>
-              <th className="text-left px-4 py-2 border-b border-gray-300">Phone</th>
-            </tr>
-          </thead>
-          <tbody>
-            {vendors.map((vendor) => (
-              <tr key={vendor._id} className="border-b hover:bg-background cursor-default">
-                <td className="px-4 py-2">{vendor.name}</td>
-                <td className="px-4 py-2">{vendor.businessName}</td>
-                <td className="px-4 py-2">{vendor.email}</td>
-                <td className="px-4 py-2">{vendor.phone || "-"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <Paper sx={{ overflowX: "auto" }}>
+          <Table stickyHeader aria-label="approved vendors table" sx={{ minWidth: 650 }}>
+            <TableHead>
+              <TableRow sx={{ bgcolor: theme.palette.grey[100] }}>
+                <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Business Name</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Email</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Phone</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {vendors.map((vendor) => (
+                <TableRow key={vendor._id} hover>
+                  <TableCell>{vendor.name}</TableCell>
+                  <TableCell>{vendor.businessName}</TableCell>
+                  <TableCell>{vendor.email}</TableCell>
+                  <TableCell>{vendor.phone || "-"}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Paper>
       )}
-    </div>
+    </Box>
   );
 }

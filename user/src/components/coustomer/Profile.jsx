@@ -3,6 +3,18 @@ import axios from "axios";
 import SweetAlertService from "../ui/SweetAlertService";
 import { User, Mail, Phone, UserSquare, Edit2, Save } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import profile from "../../assets/profile.gif";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Avatar,
+  IconButton,
+  CircularProgress,
+  Stack,
+  useTheme,
+} from "@mui/material";
 
 export default function CustomerProfile() {
   const [customer, setCustomer] = useState(null);
@@ -15,6 +27,7 @@ export default function CustomerProfile() {
   });
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
+  const theme = useTheme();
 
   useEffect(() => {
     async function fetchCustomer() {
@@ -44,7 +57,7 @@ export default function CustomerProfile() {
   }, []);
 
   const setField = (field, value) => {
-    setForm(prev => ({ ...prev, [field]: value }));
+    setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const validateForm = () => {
@@ -56,7 +69,6 @@ export default function CustomerProfile() {
       SweetAlertService.showError("Email is required");
       return false;
     }
-    // Simple email regex validation
     const emailRegex = /^\S+@\S+\.\S+$/;
     if (!emailRegex.test(form.email.trim())) {
       SweetAlertService.showError("Enter a valid email");
@@ -94,122 +106,197 @@ export default function CustomerProfile() {
     navigate("/");
   };
 
-  if (loading) return (
-    <div className="flex justify-center items-center min-h-[60vh] text-primary text-lg font-semibold">
-      Loading profile...
-    </div>
-  );
+  if (loading)
+    return (
+      <Box
+        sx={{
+          minHeight: "60vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          color: theme.palette.primary.main,
+          fontSize: "1.25rem",
+          fontWeight: 600,
+        }}
+      >
+        Loading profile...
+      </Box>
+    );
 
-  if (!customer) return (
-    <div className="text-center mt-24 text-error text-lg font-medium">
-      Unable to load customer profile.
-    </div>
-  );
+  if (!customer)
+    return (
+      <Box
+        sx={{
+          mt: 12,
+          textAlign: "center",
+          color: theme.palette.error.main,
+          fontSize: "1.25rem",
+          fontWeight: 500,
+        }}
+      >
+        Unable to load customer profile.
+      </Box>
+    );
 
   return (
-    <div className="max-w-3xl mx-auto bg-white shadow-md rounded-xl p-8 mt-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-4xl font-bold text-primary mb-8">My Profile</h1>
+    <Box
+      maxWidth={600}
+      mx="auto"
+      bgcolor="background.paper"
+      boxShadow={3}
+      borderRadius={3}
+      p={5}
+      mt={5}
+    >
+      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={5}>
+        <Typography variant="h4" fontWeight="bold" color="primary.main">
+          My Profile
+        </Typography>
         {!editing ? (
-          <button
+          <IconButton
             onClick={() => setEditing(true)}
+            color="primary"
             title="Edit Profile"
-            className="text-primary hover:text-accent transition"
+            size="large"
           >
             <Edit2 size={28} />
-          </button>
+          </IconButton>
         ) : (
-          <button
+          <IconButton
             onClick={handleSave}
             disabled={saving}
+            color="primary"
             title="Save Profile"
-            className="text-primary hover:text-accent transition"
+            size="large"
           >
-            {saving ? <span>Saving...</span> : <Save size={28} />}
-          </button>
+            {saving ? (
+              <Typography sx={{ fontSize: 14, fontWeight: 600, color: theme.palette.primary.main }}>
+                Saving...
+              </Typography>
+            ) : (
+              <Save size={28} />
+            )}
+          </IconButton>
         )}
-      </div>
+      </Stack>
 
-      <div className="space-y-6 text-gray-700">
-        {/* Name */}
-        <div className="flex items-center gap-4">
-          <User className="text-primary" size={28} />
+      <Stack spacing={5}>
+        {/* Profile Picture */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            mb: 4,
+          }}
+        >
+          <Avatar
+            src={customer.profileImage || profile}
+            alt="Profile Picture"
+            sx={{ width: 120, height: 120, borderRadius: "50%", boxShadow: theme.shadows[4] }}
+          />
+        </Box>
+
+        {/* Name Field */}
+        <Stack direction="row" alignItems="center" spacing={3}>
+          <User size={28} color={theme.palette.primary.main} />
           {!editing ? (
-            <div>
-              <h2 className="font-semibold text-lg">Full Name</h2>
-              <p>{customer.name || "-"}</p>
-            </div>
+            <Box>
+              <Typography variant="subtitle1" fontWeight="600" color="text.primary">
+                Full Name
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                {customer.name || "-"}
+              </Typography>
+            </Box>
           ) : (
-            <input
+            <TextField
+              fullWidth
               name="name"
               value={form.name}
-              onChange={e => setField("name", e.target.value)}
-              className="w-full rounded border border-gray-300 p-2"
+              onChange={(e) => setField("name", e.target.value)}
               placeholder="Full Name"
+              variant="outlined"
             />
           )}
-        </div>
+        </Stack>
 
-        {/* Email */}
-        <div className="flex items-center gap-4">
-          <Mail className="text-primary" size={28} />
+        {/* Email Field */}
+        <Stack direction="row" alignItems="center" spacing={3}>
+          <Mail size={28} color={theme.palette.primary.main} />
           {!editing ? (
-            <div>
-              <h2 className="font-semibold text-lg">Email</h2>
-              <p>{customer.email || "-"}</p>
-            </div>
+            <Box>
+              <Typography variant="subtitle1" fontWeight="600" color="text.primary">
+                Email
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                {customer.email || "-"}
+              </Typography>
+            </Box>
           ) : (
-            <input
-              name="email"
+            <TextField
+              fullWidth
               type="email"
+              name="email"
               value={form.email}
-              onChange={e => setField("email", e.target.value)}
-              className="w-full rounded border border-gray-300 p-2"
+              onChange={(e) => setField("email", e.target.value)}
               placeholder="Email"
+              variant="outlined"
             />
           )}
-        </div>
+        </Stack>
 
-        {/* Phone */}
-        <div className="flex items-center gap-4">
-          <Phone className="text-primary" size={28} />
+        {/* Phone Field */}
+        <Stack direction="row" alignItems="center" spacing={3}>
+          <Phone size={28} color={theme.palette.primary.main} />
           {!editing ? (
-            <div>
-              <h2 className="font-semibold text-lg">Phone</h2>
-              <p>{customer.phone || "-"}</p>
-            </div>
+            <Box>
+              <Typography variant="subtitle1" fontWeight="600" color="text.primary">
+                Phone
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                {customer.phone || "-"}
+              </Typography>
+            </Box>
           ) : (
-            <input
-              name="phone"
+            <TextField
+              fullWidth
               type="tel"
+              name="phone"
               value={form.phone}
-              onChange={e => setField("phone", e.target.value)}
-              className="w-full rounded border border-gray-300 p-2"
+              onChange={(e) => setField("phone", e.target.value)}
               placeholder="Phone Number"
+              variant="outlined"
             />
           )}
-        </div>
+        </Stack>
 
-        {/* Role */}
-        <div className="flex items-center gap-4">
-          <UserSquare className="text-primary" size={28} />
-          <div>
-            <h2 className="font-semibold text-lg">User Role</h2>
-            <p className="capitalize">{customer.role || "-"}</p>
-          </div>
-        </div>
-      </div>
+        {/* Role (non-editable) */}
+        <Stack direction="row" alignItems="center" spacing={3}>
+          <UserSquare size={28} color={theme.palette.primary.main} />
+          <Box>
+            <Typography variant="subtitle1" fontWeight="600" color="text.primary">
+              User Role
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ textTransform: "capitalize" }}>
+              {customer.role || "-"}
+            </Typography>
+          </Box>
+        </Stack>
+      </Stack>
 
       {!editing && (
-        <div className="mt-10 text-center">
-          <button
+        <Box sx={{ mt: 8, textAlign: "center" }}>
+          <Button
+            variant="contained"
+            color="error"
             onClick={handleLogout}
-            className="px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white font-semibold transition"
+            size="large"
+            sx={{ px: 5 }}
           >
             Logout
-          </button>
-        </div>
+          </Button>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

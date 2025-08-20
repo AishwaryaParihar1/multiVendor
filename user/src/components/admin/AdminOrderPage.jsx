@@ -1,11 +1,25 @@
 import React, { useEffect, useState } from "react";
-import API from "../../utils/api";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import axios from "axios";
+import {
+  Box,
+  Typography,
+  Paper,
+  Avatar,
+  Grid,
+  Collapse,
+  Stack,
+  IconButton,
+  Divider,
+  CircularProgress,
+  useTheme,
+} from "@mui/material";
+import { ChevronDown, ChevronUp, Image } from "lucide-react";
 
 export default function AdminOrderPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedIndex, setExpandedIndex] = useState(null);
+  const theme = useTheme();
 
   useEffect(() => {
     fetchOrders();
@@ -14,8 +28,10 @@ export default function AdminOrderPage() {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      // API must be: /api/order/all (protected for admin)
-      const res = await API.get("/order/all");
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/order/all`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setOrders(res.data);
     } catch {
       setOrders([]);
@@ -24,134 +40,188 @@ export default function AdminOrderPage() {
     }
   };
 
-  if (loading)
-    return <div className="p-6 text-center text-gray-700">Loading all orders…</div>;
-
-  if (!orders.length)
+  if (loading) {
     return (
-      <div className="p-6 text-center text-gray-600">
-        <h2 className="text-2xl font-semibold mb-4">No orders have been placed yet.</h2>
-        <p>Once customers place orders, they will show here.</p>
-      </div>
+      <Box sx={{ display: "flex", justifyContent: "center", py: 10, color: theme.palette.text.secondary }}>
+        <CircularProgress />
+        <Typography sx={{ ml: 2 }}>Loading all orders…</Typography>
+      </Box>
     );
+  }
+
+  if (!orders.length) {
+    return (
+      <Box sx={{ py: 10, textAlign: "center" }}>
+        <Typography variant="h4" gutterBottom color="text.secondary">
+          No orders have been placed yet.
+        </Typography>
+        <Typography variant="body1" color="text.secondary">
+          Once customers place orders, they will show here.
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <h2 className="text-3xl font-bold mb-8 text-primary">All Orders (Admin)</h2>
-      <div className="space-y-7">
-        {orders.map((order, idx) => (
-          <div key={order._id} className="rounded-xl shadow-lg bg-white p-5">
-            {/* Order Header: Collapsible */}
-            <div
-              className="flex flex-col md:flex-row md:items-center justify-between gap-2 cursor-pointer"
-              onClick={() => setExpandedIndex(expandedIndex === idx ? null : idx)}
-            >
-              <div className="flex-1">
-                <span className="font-semibold text-primary">Order ID:</span>
-                <span className="ml-2 text-gray-800">{order._id}</span>
-                <span className="ml-6 font-semibold text-primary">Placed At:</span>
-                <span className="ml-2 text-gray-700">
-                  {new Date(order.createdAt || order.placedAt).toLocaleString()}
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    order.orderStatus === "pending"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : order.orderStatus === "delivered"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-blue-100 text-blue-700"
-                  }`}
-                >
-                  {order.orderStatus.toUpperCase()}
-                </span>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    order.paymentStatus === "paid"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
-                  }`}
-                >
-                  {order.paymentStatus.toUpperCase()}
-                </span>
-                <span className="ml-1">
-                  {expandedIndex === idx ? <ChevronUp /> : <ChevronDown />}
-                </span>
-              </div>
-            </div>
-            {/* Details: Accordion */}
-            {expandedIndex === idx && (
-              <div className="mt-4 border-t pt-4">
-                <div className="flex flex-col md:flex-row md:gap-10">
-                  {/* Products & Vendor details */}
-                  <div className="flex-1">
-                    <h4 className="font-semibold mb-2 text-gray-800">Products & Vendors</h4>
-                    <div className="space-y-3">
+    <Box sx={{ maxWidth: 1200, mx: "auto", p: 2 }}>
+      <Typography variant="h4" gutterBottom sx={{ mb: 4, color: theme.palette.primary.main, fontWeight: "bold", textAlign: "center" }}>
+        All Orders (Admin)
+      </Typography>
+      <Stack spacing={4}>
+        {orders.map((order, idx) => {
+          const isExpanded = expandedIndex === idx;
+          const orderDate = order.createdAt || order.placedAt;
+
+          return (
+            <Paper key={order._id} sx={{ p: 3, borderRadius: 3, boxShadow: 3 }}>
+              {/* Header */}
+              <Box
+                onClick={() => setExpandedIndex(isExpanded ? null : idx)}
+                sx={{
+                  display: "flex",
+                  flexDirection: { xs: "column", md: "row" },
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  cursor: "pointer",
+                  gap: 2,
+                }}
+              >
+                <Box sx={{ flex: 1, display: "flex", flexWrap: "wrap", alignItems: "center", gap: 2 }}>
+                  <Typography variant="subtitle1" fontWeight="600" color="primary">
+                    Order ID:
+                  </Typography>
+                  <Typography variant="body2" color="text.primary" sx={{ wordBreak: "break-all" }}>
+                    {order._id}
+                  </Typography>
+
+                  <Typography variant="subtitle1" fontWeight="600" color="primary" sx={{ ml: 4 }}>
+                    Placed At:
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {new Date(orderDate).toLocaleString()}
+                  </Typography>
+                </Box>
+
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Typography
+                    sx={{
+                      px: 1.5,
+                      py: 0.5,
+                      borderRadius: "9999px",
+                      fontWeight: "bold",
+                      fontSize: "0.75rem",
+                      color:
+                        order.orderStatus === "pending" ? "#92400e" :
+                        order.orderStatus === "delivered" ? "#166534" :
+                        "#1e40af",
+                      backgroundColor:
+                        // order.orderStatus === "pending" ? "#fef3c7" :
+                        // order.orderStatus === "delivered" ? "#bbf7d0" :
+                        "#bfdbfe",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {order.orderStatus.toUpperCase()}
+                  </Typography>
+
+                  <Typography
+                    sx={{
+                      px: 1.5,
+                      py: 0.5,
+                      borderRadius: "9999px",
+                      fontWeight: "bold",
+                      fontSize: "0.75rem",
+                      color: order.paymentStatus === "paid" ? "#166534" : "#991b1b",
+                      backgroundColor: order.paymentStatus === "paid" ? "#bbf7d0" : "#fecaca",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {order.paymentStatus.toUpperCase()}
+                  </Typography>
+
+                  <Box>
+                    {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  </Box>
+                </Box>
+              </Box>
+
+              {/* Details */}
+              <Collapse in={isExpanded} timeout="auto" unmountOnExit>
+                <Divider sx={{ my: 2 }} />
+                <Grid container spacing={4}>
+                  {/* Products & Vendors */}
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="h6" fontWeight="600" gutterBottom>
+                      Products & Vendors
+                    </Typography>
+                    <Stack spacing={2}>
                       {order.items.map((item) => (
-                        <div
-                          key={item._id}
-                          className="flex items-center gap-4 border rounded-lg p-3 bg-gray-50"
-                        >
-                          <img
-                            src={item.product?.images?.[0] || "/placeholder.png"}
+                        <Box key={item._id} sx={{ display: "flex", gap: 2, bgcolor: "#f9fafb", borderRadius: 2, p: 2 }}>
+                          <Avatar
+                            src={item.product?.images?.[0] || ""}
                             alt={item.product?.name}
-                            className="h-14 w-14 object-cover rounded-md"
-                          />
-                          <div className="flex-grow">
-                            <div className="font-bold text-primary">{item.product?.name}</div>
-                            <div className="text-xs text-gray-500 line-clamp-1">
-                              Vendor: {item.vendor?.businessName || "N/A"} (
-                              {item.vendor?.name})<br />
-                              Email: {item.vendor?.email}
-                            </div>
-                            <div className="text-sm text-gray-700 mt-1">
-                              Qty: <span className="font-semibold">{item.quantity}</span>
-                            </div>
-                          </div>
-                          <div className="text-accent text-lg font-bold">
+                            variant="rounded"
+                            sx={{ width: 64, height: 64 }}
+                          >
+                            {!item.product?.images?.[0] && <Image size={32} color={theme.palette.grey[400]} />}
+                          </Avatar>
+                          <Box sx={{ flexGrow: 1 }}>
+                            <Typography variant="subtitle1" color="primary" fontWeight="bold">
+                              {item.product?.name}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" noWrap>
+                              Vendor: {item.vendor?.businessName || "N/A"} ({item.vendor?.name || "N/A"})
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" noWrap>
+                              Email: {item.vendor?.email || "N/A"}
+                            </Typography>
+                            <Typography variant="body2" sx={{ mt: 1 }}>
+                              Qty: <strong>{item.quantity}</strong>
+                            </Typography>
+                          </Box>
+                          <Typography variant="h6" color="secondary" sx={{ minWidth: 90, textAlign: "right", fontWeight: "bold" }}>
                             ₹{(item.priceAtPurchase * item.quantity).toFixed(2)}
-                          </div>
-                        </div>
+                          </Typography>
+                        </Box>
                       ))}
-                    </div>
-                  </div>
+                    </Stack>
+                  </Grid>
+
                   {/* Customer & Shipping Info */}
-                  <div className="flex-1 mt-4 md:mt-0">
-                    <h4 className="font-semibold mb-2 text-gray-800">Customer</h4>
-                    <div className="mb-2">
-                      <span className="font-semibold">Name:</span>{" "}
-                      {order.user?.name}
-                    </div>
-                    <div className="mb-2">
-                      <span className="font-semibold">Email:</span>{" "}
-                      {order.user?.email}
-                    </div>
-                    <h4 className="font-semibold mt-3 mb-2 text-gray-800">Shipping Address</h4>
-                    <div className="text-sm text-gray-800">
-                      <div>{order.shippingAddress?.fullName}</div>
-                      <div>{order.shippingAddress?.address}</div>
-                      <div>
-                        {order.shippingAddress?.city}, {order.shippingAddress?.state},{" "}
-                        {order.shippingAddress?.country} - {order.shippingAddress?.postalCode}
-                      </div>
-                      <div>Phone: {order.shippingAddress?.phone}</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-6 flex justify-end">
-                  <span className="text-xl font-bold text-primary">
-                    Order Total: ₹{order.totalAmount && order.totalAmount.toFixed(2)}
-                  </span>
-                </div>
-                <div className="text-sm text-gray-500 mt-2">
-                  Payment: {order.paymentMethod?.toUpperCase()}
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="h6" fontWeight="600" gutterBottom>
+                      Customer & Shipping Info
+                    </Typography>
+                    <Typography variant="subtitle1" fontWeight="600">{order.user?.name || "-"}</Typography>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>{order.user?.email || "-"}</Typography>
+
+                    <Typography variant="subtitle1" fontWeight="600" sx={{ mt: 3, mb: 1 }}>
+                      Shipping Address
+                    </Typography>
+                    <Box sx={{ typography: "body2", color: "text.primary", whiteSpace: "pre-line" }}>
+                      {order.shippingAddress?.fullName || "-"}{"\n"}
+                      {order.shippingAddress?.address || "-"}{"\n"}
+                      {order.shippingAddress?.city}, {order.shippingAddress?.state},{" "}
+                      {order.shippingAddress?.country || "-"} - {order.shippingAddress?.postalCode || "-"}{"\n"}
+                      Phone: {order.shippingAddress?.phone || "-"}
+                    </Box>
+                  </Grid>
+                </Grid>
+
+                <Box sx={{ mt: 4, textAlign: "right" }}>
+                  <Typography variant="h6" fontWeight="bold" color="primary">
+                    Order Total: ₹
+                    {order.totalAmount ? order.totalAmount.toFixed(2) : order.items.reduce((acc, item) => acc + item.quantity * item.priceAtPurchase, 0).toFixed(2)}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" mt={1}>
+                    Payment Method: {order.paymentMethod?.toUpperCase() || "-"}
+                  </Typography>
+                </Box>
+              </Collapse>
+            </Paper>
+          );
+        })}
+      </Stack>
+    </Box>
   );
 }

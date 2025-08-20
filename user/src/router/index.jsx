@@ -22,6 +22,11 @@ import CheckoutPage from "../components/coustomer/CheckoutPage";
 import VendorOrdersPage from "../components/vendor/VendorOrdersPage";
 import AdminOrderPage from "../components/admin/AdminOrderPage";
 import MyOrdersPage from "../components/coustomer/MyOrdersPage";
+import Shop from "../components/coustomer/Shop";
+import Contact from "../components/coustomer/Contact";
+import SingleProduct from "../components/coustomer/SingleProduct";
+import ShopHero from "../components/coustomer/ShopHero";
+import About from "../components/coustomer/About";
 
 export const router = createBrowserRouter([
   {
@@ -37,8 +42,13 @@ export const router = createBrowserRouter([
       { path: "/cart", element: <CartPage /> },
       { path: "/checkoutPage", element: <CheckoutPage /> },
        { path: "/my-orders", element: <MyOrdersPage /> },
+       { path: "/shop", element: <Shop /> },
+       { path: "/contact", element: <Contact /> },
+       { path: "/product/:id", element: <SingleProduct /> },
+       { path: "/shopHero", element: <ShopHero /> },
+       { path: "/about", element: <About /> },
 
-      // Profile (if needed, keep as nested):
+    
       {
         path: "user/profile",
         element: (

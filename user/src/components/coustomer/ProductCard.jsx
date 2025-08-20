@@ -1,13 +1,26 @@
-// ProductCard.jsx
 import React from "react";
 import { Heart, ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import API from "../../utils/api";
 import SweetAlertService from "../ui/SweetAlertService";
+import {
+  Card,
+  CardActionArea,
+  CardMedia,
+  CardContent,
+  Typography,
+  Box,
+  IconButton,
+  Stack,
+  Button,
+  useTheme,
+  Tooltip,
+} from "@mui/material";
 
 export default function ProductCard({ product }) {
   const navigate = useNavigate();
+  const theme = useTheme();
   const isLoggedIn = !!localStorage.getItem("token");
 
   const handleAddToCart = async (e) => {
@@ -50,59 +63,113 @@ export default function ProductCard({ product }) {
 
   return (
     <motion.div
-      whileHover={{ scale: 1.02 }}
+      whileHover={{ scale: 1.02, boxShadow: theme.shadows[6] }}
       whileTap={{ scale: 0.98 }}
-      className="w-72 bg-white border border-gray-200 rounded shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer overflow-hidden"
+      style={{ borderRadius: 12, overflow: "hidden", cursor: "pointer", backgroundColor: "#fff", width: 288 }}
     >
-      {/* Image Large + Focus */}
-      <div className="relative h-72 w-full">
-        <img
-          src={product.images?.[0] || "/placeholder.png"}
-          alt={product.name}
-          className="h-full w-full object-cover"
-        />
-        {isLoggedIn && (
-          <button
-            title="Add to Wishlist"
-            className="absolute top-3 right-3 bg-white/90 rounded-full p-2 shadow-sm 
-                       hover:bg-gray-800 hover:text-white transition-all"
-            onClick={handleAddToWishlist}
-          >
-            <Heart size={18} className="text-secondary" />
-          </button>
-        )}
-      </div>
+      <Card elevation={0} sx={{ borderRadius: 0 }}>
+        <CardActionArea onClick={() => navigate(`/product/${product._id}`)} sx={{ outline: "none" }}>
+          <Box sx={{ position: "relative", height: 288 }}>
+            <CardMedia
+              component="img"
+              image={product.images?.[0] || "/placeholder.png"}
+              alt={product.name}
+              sx={{ height: "100%", width: "100%", objectFit: "cover" }}
+              loading="lazy"
+            />
+            {isLoggedIn && (
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{
+                  position: "absolute",
+                  top: 12,
+                  right: 12,
+                  bgcolor: "rgba(255,255,255,0.9)",
+                  borderRadius: "9999px",
+                  padding: 0.5,
+                  boxShadow: theme.shadows[2],
+                }}
+              >
+                <Tooltip title="Add to Wishlist" arrow>
+                  <IconButton
+                    size="small"
+                    onClick={handleAddToWishlist}
+                    aria-label="Add to Wishlist"
+                    sx={{
+                      bgcolor: "background.paper",
+                      "&:hover": { bgcolor: theme.palette.secondary.main, color: "#fff" },
+                      width: 32,
+                      height: 32,
+                    }}
+                  >
+                    <Heart size={18} />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Add to Cart" arrow>
+                  <IconButton
+                    size="small"
+                    onClick={handleAddToCart}
+                    aria-label="Add to Cart"
+                    sx={{
+                      bgcolor: "background.paper",
+                      "&:hover": { bgcolor: theme.palette.primary.main, color: "#fff" },
+                      width: 32,
+                      height: 32,
+                    }}
+                  >
+                    <ShoppingCart size={18} />
+                  </IconButton>
+                </Tooltip>
+              </Stack>
+            )}
+          </Box>
 
-      {/* Content minimal */}
-      <div className="p-4 flex bg-[#E5E2D9] flex-col">
-        <h3
-          className="font-medium text-sm text-gray-900 truncate"
-          title={product.name}
-        >
-          {product.name}
-        </h3>
-        <p className="text-gray-500 text-xs line-clamp-2 mt-1 min-h-[32px]">
-          {product.description}
-        </p>
-
-        {/* Price + Cart */}
-        <div className="mt-3 flex items-center justify-between">
-          <div className="text-lg font-semibold text-gray-900">
-            ₹{product.sellingPrice}
-          </div>
-          {isLoggedIn && (
-            <button
-              title="Add to Cart"
-              className="flex items-center gap-1 bg-secondary text-white px-3 py-1.5 rounded-full 
-                         text-xs font-medium hover:bg-gray-800 transition-colors"
-              onClick={handleAddToCart}
+          <CardContent sx={{ backgroundColor: "#E5E2D9", display: "flex", flexDirection: "column" }}>
+            <Typography
+              variant="subtitle1"
+              noWrap
+              title={product.name}
+              sx={{ fontWeight: 600, color: theme.palette.text.primary }}
             >
-              <ShoppingCart size={14} />
-              Add
-            </button>
-          )}
-        </div>
-      </div>
+              {product.name}
+            </Typography>
+            <Typography
+              variant="body2"
+              noWrap
+              title={product.mrp}
+              sx={{ color: theme.palette.text.secondary, fontSize: "0.875rem" }}
+            >
+              {product.mrp}
+            </Typography>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <Typography  sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
+                ₹{product.sellingPrice}
+              </Typography>
+              {isLoggedIn && (
+                <Button
+                  variant="contained"
+                  size="small"
+                  sx={{
+                    textTransform: "none",
+                    fontWeight: 600,
+                    px: 3,
+                    py: 1,
+                    bgcolor: theme.palette.secondary.main,
+                    "&:hover": { bgcolor: theme.palette.secondary.dark },
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddToCart(e);
+                  }}
+                >
+                  Add to Cart
+                </Button>
+              )}
+            </Box>
+          </CardContent>
+        </CardActionArea>
+      </Card>
     </motion.div>
   );
 }

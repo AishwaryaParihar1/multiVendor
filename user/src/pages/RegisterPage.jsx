@@ -1,6 +1,19 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
-import SweetAlertService from "../components/ui/SweetAlertService"; 
+import SweetAlertService from "../components/ui/SweetAlertService";
+import profile from "../assets/profilelogin.svg";
+import {
+  Box,
+  Typography,
+  TextField,
+  Select,
+  MenuItem,
+  Button,
+  Stack,
+  Paper,
+  Avatar,
+  useTheme,
+} from "@mui/material";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -11,102 +24,198 @@ export default function RegisterPage() {
     businessName: "",
     phone: "",
   });
+  const theme = useTheme();
 
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, formData);
-    console.log("Register response:", response.data);  
-    await SweetAlertService.showSuccess("Registration successful!", "Please login.");
-    window.location.href = "/";
-  } catch (err) {
-    console.error("Register error:", err); 
-    SweetAlertService.showError(
-      "Registration Failed",
-      err.response?.data?.message || "An error occurred"
-    );
-  }
-};
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, formData);
+      await SweetAlertService.showSuccess("Registration successful!", "Please login.");
+      window.location.href = "/";
+    } catch (err) {
+      SweetAlertService.showError("Registration Failed", err.response?.data?.message || "An error occurred");
+    }
+  };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
-        <h2 className="text-2xl font-bold text-center text-primary">Create Your Account</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Name */}
-          <input
-            name="name"
-            placeholder="Full Name"
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent border-gray-300"
-          />
-          {/* Email */}
-          <input
-            name="email"
-            type="email"
-            placeholder="Email Address"
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent border-gray-300"
-          />
-          {/* Password */}
-          <input
-            name="password"
-            type="password"
-            placeholder="Password"
-            onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent border-gray-300"
-          />
-          {/* Role */}
-          <select
-            name="role"
-            onChange={handleChange}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent border-gray-300"
-          >
-            <option value="customer">Customer</option>
-            <option value="vendor">Vendor</option>
-          </select>
+    <Box
+      sx={{
+        minHeight: "100vh",
+        bgcolor: theme.palette.background.default,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        px: 2,
+      }}
+    >
+      <Paper
+        sx={{
+          maxWidth: 400,
+          width: "100%",
+          p: 5,
+          borderRadius: 3,
+          boxShadow: 3,
+          textAlign: "center",
+          bgcolor: theme.palette.background.paper,
+        }}
+      >
+        <Avatar
+          src={profile}
+          alt="Profile"
+          sx={{
+            width: 80,
+            height: 80,
+            mx: "auto",
+            mb: 3,
+          }}
+        />
+        <Typography variant="h5" mb={3} fontWeight="bold" color="primary">
+          Create Your Account
+        </Typography>
+        <form onSubmit={handleSubmit}>
+          <Stack spacing={3}>
+            <TextField
+              name="name"
+              label="Full Name"
+              variant="outlined"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              fullWidth
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: "transparent",
+                  "&.Mui-focused": {
+                    backgroundColor: "transparent",
+                  },
+                },
+              }}
+            />
+            <TextField
+              name="email"
+              label="Email"
+              variant="outlined"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              fullWidth
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: "transparent",
+                  "&.Mui-focused": {
+                    backgroundColor: "transparent",
+                  },
+                },
+              }}
+            />
+            <TextField
+              name="password"
+              label="Password"
+              variant="outlined"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              fullWidth
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: "transparent",
+                  "&.Mui-focused": {
+                    backgroundColor: "transparent",
+                  },
+                },
+              }}
+            />
+            <Select
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              variant="outlined"
+              required
+              fullWidth
+              sx={{
+                backgroundColor: "transparent",
+                color: theme.palette.text.primary,
+                "&:focus": {
+                  backgroundColor: "transparent",
+                },
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: theme.palette.divider,
+                },
+                "& .MuiSelect-icon": {
+                  color: theme.palette.text.primary,
+                },
+              }}
+            >
+              <MenuItem value="customer">Customer</MenuItem>
+              <MenuItem value="vendor">Vendor</MenuItem>
+            </Select>
 
-          {/* Vendor fields */}
-          {formData.role === "vendor" && (
-            <>
-              <input
-                name="businessName"
-                placeholder="Business Name"
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent border-gray-300"
-              />
-              <input
-                name="phone"
-                placeholder="Phone Number"
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent border-gray-300"
-              />
-            </>
-          )}
-
-          {/* Submit */}
-          <button
+            {formData.role === "vendor" && (
+              <>
+                <TextField
+                  name="businessName"
+                  label="Business Name"
+                  variant="outlined"
+                  value={formData.businessName}
+                  onChange={handleChange}
+                  required
+                  fullWidth
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "transparent",
+                      "&.Mui-focused": {
+                        backgroundColor: "transparent",
+                      },
+                    },
+                  }}
+                />
+                <TextField
+                  name="phone"
+                  label="Phone"
+                  variant="outlined"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                  fullWidth
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: "transparent",
+                      "&.Mui-focused": {
+                        backgroundColor: "transparent",
+                      },
+                    },
+                  }}
+                />
+              </>
+            )}
+          </Stack>
+          <Button
             type="submit"
-            className="w-full py-2 font-semibold text-white rounded-lg bg-primary hover:bg-secondary transition-colors duration-300"
+            variant="contained"
+            color="primary"
+            size="large"
+            fullWidth
+            sx={{ mt: 3, fontWeight: "bold" }}
           >
-            Register
-          </button>
-
-          {/* Note */}
-          <p className="text-sm text-center text-gray-500">
-            Already have an account?{" "}
-            <a href="/" className="text-accent hover:underline">
-              Login
-            </a>
-          </p>
+            REGISTER
+          </Button>
         </form>
-      </div>
-    </div>
+        <Typography variant="body2" color="textSecondary" mt={3}>
+          Already have an account?{" "}
+          <a href="/login" style={{ color: theme.palette.primary.main, textDecoration: "underline" }}>
+            Log In
+          </a>
+        </Typography>
+      </Paper>
+    </Box>
   );
 }

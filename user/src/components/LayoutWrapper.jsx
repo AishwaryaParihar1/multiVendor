@@ -26,15 +26,19 @@ export default function LayoutWrapper() {
   }
 
   // Show Navbar/Footer on home and normal pages
-  return (
-    <>
-  <div className="flex flex-col min-h-screen">
+   return (
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <Navbar />
-      <main className="flex-grow mt-16"> {/* mt-16 for navbar height */}
+      <main style={{ flexGrow: 1 /* navbar ki height */ }}>
         <Outlet />
       </main>
-     <Footer/>
+      <Footer />
     </div>
-    </>
   );
 }

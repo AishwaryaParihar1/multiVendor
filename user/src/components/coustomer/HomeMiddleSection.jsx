@@ -1,31 +1,116 @@
 import React from "react";
+import { Box, Typography, Container, Button, useTheme } from "@mui/material";
 
 export default function HomeMiddleSection() {
-  return (
-    <section className="relative w-full min-h-[60vh] flex items-center justify-center bg-background overflow-hidden">
-      {/* Soft gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-accent/10 to-secondary/10" />
+  const theme = useTheme();
 
-      {/* Content */}
-      <div className="relative z-10 max-w-6xl mx-auto text-center px-6">
-        <h2 className="text-secondary text-3xl md:text-5xl font-cinzel font-bold leading-snug mb-4">
+  return (
+    <Box
+      component="section"
+      sx={{
+        position: "relative",
+        width: "100%",
+        minHeight: "30vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        bgcolor: theme.palette.background.default,
+        overflow: "hidden",
+        px: 2,
+        py: { xs: 8, md: 12 },
+      }}
+    >
+      {/* Gradient Background */}
+      <Box
+        sx={{
+          position: "absolute",
+          inset: 0,
+          background: `linear-gradient(90deg, ${theme.palette.primary.main}1A, ${theme.palette.accent?.main || theme.palette.secondary.main}1A, ${theme.palette.secondary.main}1A)`,
+          zIndex: 0,
+        }}
+      />
+
+      {/* Content Container */}
+      <Container maxWidth="lg" sx={{ position: "relative", zIndex: 10, textAlign: "center" }}>
+        <Typography
+          variant="h3"
+          component="h2"
+          sx={{
+            fontFamily: "'Cinzel', serif",
+            fontWeight: 900,
+            color: theme.palette.primary.main,
+            mb: 3,
+            fontSize: { xs: "2rem", md: "3.5rem" },
+            lineHeight: 1.2,
+          }}
+        >
           Upgrade Your Interiors <br /> With Exclusive Collections
-        </h2>
-        <p className="text-muted text-base md:text-lg mb-6 max-w-2xl mx-auto">
+        </Typography>
+        <Typography
+          variant="body1"
+          sx={{
+            color: theme.palette.text.secondary,
+            maxWidth: 600,
+            mx: "auto",
+            mb: 5,
+            fontSize: { xs: "1rem", md: "1.125rem" },
+          }}
+        >
           Discover timeless designs and premium finishes crafted to bring elegance and warmth to your living spaces.  
           Subtle luxury, tailored for you.
-        </p>
-        <button
+        </Typography>
+        <Button
+          variant="contained"
+          size="large"
           onClick={() => (window.location.href = "/shop")}
-          className="bg-primary text-white font-semibold px-6 md:px-8 py-2.5 md:py-3 rounded-full hover:bg-secondary transition shadow-md"
+          sx={{
+            bgcolor: theme.palette.primary.main,
+            color: "#fff",
+            px: { xs: 5, md: 7 },
+            py: 1.5,
+            borderRadius: 9999,
+            fontWeight: 700,
+            fontSize: "1.125rem",
+            "&:hover": {
+              bgcolor: theme.palette.secondary.main,
+            },
+            boxShadow: theme.shadows[4],
+            transition: "background-color 0.3s ease",
+          }}
         >
           Shop Now
-        </button>
-      </div>
+        </Button>
+      </Container>
 
       {/* Soft blurred accents */}
-      <div className="hidden md:block absolute top-16 left-16 w-40 h-40 bg-accent/20 rounded-full blur-2xl"></div>
-      <div className="hidden md:block absolute bottom-16 right-16 w-56 h-56 bg-secondary/20 rounded-full blur-3xl"></div>
-    </section>
+      <Box
+        sx={{
+          display: { xs: "none", md: "block" },
+          position: "absolute",
+          top: 64,
+          left: 64,
+          width: 160,
+          height: 160,
+          bgcolor: theme.palette.accent?.main + "33" || theme.palette.secondary.main + "33",
+          borderRadius: "50%",
+          filter: "blur(64px)",
+          zIndex: 1,
+        }}
+      />
+      <Box
+        sx={{
+          display: { xs: "none", md: "block" },
+          position: "absolute",
+          bottom: 64,
+          right: 64,
+          width: 224,
+          height: 224,
+          bgcolor: theme.palette.secondary.main + "33",
+          borderRadius: "50%",
+          filter: "blur(96px)",
+          zIndex: 1,
+        }}
+      />
+    </Box>
   );
 }

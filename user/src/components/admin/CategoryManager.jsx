@@ -1,8 +1,24 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import SweetAlertService from "../ui/SweetAlertService"; // Assuming proper path
+import {
+  Box,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  IconButton,
+  Stack,
+  useTheme,
+} from "@mui/material";
+import { Edit, Delete, Check, Close } from "@mui/icons-material";
+import SweetAlertService from "../ui/SweetAlertService";
 
 export default function CategoryManager() {
+  const theme = useTheme();
   const [categories, setCategories] = useState([]);
   const [categoryName, setCategoryName] = useState("");
   const [editingCategory, setEditingCategory] = useState(null);
@@ -12,29 +28,33 @@ export default function CategoryManager() {
     fetchCategories();
   }, []);
 
-  // Fetch categories from backend
-  const fetchCategories = () => {
-    axios.get(`${import.meta.env.VITE_API_URL}/api/category`)
-      .then(res => setCategories(res.data))
-      .catch(() => SweetAlertService.showError("Failed to load categories"));
+  // Fetch categories
+  const fetchCategories = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/category`);
+      setCategories(res.data);
+    } catch {
+      SweetAlertService.showError("Failed to load categories");
+    }
   };
 
   // Add new category
-  const handleAddCategory = () => {
+  const handleAddCategory = async () => {
     if (!categoryName.trim()) return;
-    axios.post(`${import.meta.env.VITE_API_URL}/api/category`, { name: categoryName.trim() })
-      .then(res => {
-        setCategories([...categories, res.data]);
-        setCategoryName("");
-        SweetAlertService.showSuccess("Category added successfully");
-      })
-      .catch(() => SweetAlertService.showError("Failed to add category"));
+    try {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/category`, { name: categoryName.trim() });
+      setCategories([...categories, res.data]);
+      setCategoryName("");
+      SweetAlertService.showSuccess("Category added successfully");
+    } catch {
+      SweetAlertService.showError("Failed to add category");
+    }
   };
 
   // Start editing a category
-  const startEditing = (cat) => {
-    setEditingCategory(cat._id);
-    setEditName(cat.name);
+  const startEditing = (category) => {
+    setEditingCategory(category._id);
+    setEditName(category.name);
   };
 
   // Cancel editing
@@ -44,15 +64,16 @@ export default function CategoryManager() {
   };
 
   // Save edited category
-  const saveEdit = (id) => {
+  const saveEdit = async (id) => {
     if (!editName.trim()) return;
-    axios.put(`${import.meta.env.VITE_API_URL}/api/category/${id}`, { name: editName.trim() })
-      .then(() => {
-        fetchCategories();
-        cancelEditing();
-        SweetAlertService.showSuccess("Category updated successfully");
-      })
-      .catch(() => SweetAlertService.showError("Failed to update category"));
+    try {
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/category/${id}`, { name: editName.trim() });
+      await fetchCategories();
+      cancelEditing();
+      SweetAlertService.showSuccess("Category updated successfully");
+    } catch {
+      SweetAlertService.showError("Failed to update category");
+    }
   };
 
   // Delete category with confirmation
@@ -63,100 +84,96 @@ export default function CategoryManager() {
       "Yes, Delete"
     );
     if (!confirmed) return;
-    axios.delete(`${import.meta.env.VITE_API_URL}/api/category/${id}`)
-      .then(() => {
-        fetchCategories();
-        SweetAlertService.showSuccess("Category deleted successfully");
-      })
-      .catch(() => SweetAlertService.showError("Failed to delete category"));
+    try {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/category/${id}`);
+      await fetchCategories();
+      SweetAlertService.showSuccess("Category deleted successfully");
+    } catch {
+      SweetAlertService.showError("Failed to delete category");
+    }
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-semibold mb-6 text-gray-800  pb-2">Manage Product Categories</h2>
+    <Box sx={{ maxWidth: 600, mx: "auto", mt: 6, p: 3 }}>
+      <Paper elevation={3} sx={{ p: 3 }}>
+        <Typography variant="h5" fontWeight="bold" gutterBottom>
+          Manage Product Categories
+        </Typography>
 
-      <div className="flex mb-6">
-        <input
-          type="text"
-          value={categoryName}
-          onChange={(e) => setCategoryName(e.target.value)}
-          placeholder="New Category Name"
-          className="flex-grow border border-gray-300 rounded-l-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-          disabled={editingCategory !== null}
-        />
-        <button
-          onClick={handleAddCategory}
-          className={`bg-primary text-white px-5 py-2 rounded-r-md transition-colors ${editingCategory !== null ? "opacity-50 cursor-not-allowed" : "hover:bg-primary-dark"}`}
-          aria-label="Add category"
-          disabled={editingCategory !== null}
+        <Stack direction="row" spacing={2} mb={3}>
+          <TextField
+            label="New Category Name"
+            variant="outlined"
+            value={categoryName}
+            onChange={(e) => setCategoryName(e.target.value)}
+            fullWidth
+            disabled={!!editingCategory}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleAddCategory}
+            disabled={!categoryName.trim() || !!editingCategory}
+          >
+            Add
+          </Button>
+        </Stack>
+
+        <List
+          sx={{
+            maxHeight: 300,
+            overflowY: "auto",
+            bgcolor: "background.paper",
+            borderRadius: 1,
+            border: `1px solid ${theme.palette.divider}`,
+          }}
         >
-          Add
-        </button>
-      </div>
-
-      <ul className="max-h-60 overflow-y-auto space-y-2">
-        {categories.length === 0 ? (
-          <li className="text-gray-500 italic">No categories added yet.</li>
-        ) : (
-          categories.map((cat) => (
-            <li
-              key={cat._id}
-              className="flex items-center justify-between px-4 py-2 border border-gray-200 rounded-md hover:bg-gray-50 transition"
-            >
-              {editingCategory === cat._id ? (
-                <>
-                  <input
-                    type="text"
+          {categories.length === 0 ? (
+            <Typography variant="body2" color="text.secondary" align="center" sx={{ p: 2, fontStyle: "italic" }}>
+              No categories added yet.
+            </Typography>
+          ) : (
+            categories.map((cat) => (
+              <ListItem
+                key={cat._id}
+                secondaryAction={
+                  editingCategory === cat._id ? (
+                    <>
+                      <IconButton edge="end" aria-label="save" onClick={() => saveEdit(cat._id)} disabled={!editName.trim()}>
+                        <Check color={!editName.trim() ? "disabled" : "success"} />
+                      </IconButton>
+                      <IconButton edge="end" aria-label="cancel" onClick={cancelEditing}>
+                        <Close color="error" />
+                      </IconButton>
+                    </>
+                  ) : (
+                    <>
+                      <IconButton edge="end" aria-label="edit" onClick={() => startEditing(cat)}>
+                        <Edit />
+                      </IconButton>
+                      <IconButton edge="end" aria-label="delete" onClick={() => deleteCategory(cat._id)}>
+                        <Delete color="error" />
+                      </IconButton>
+                    </>
+                  )
+                }
+              >
+                {editingCategory === cat._id ? (
+                  <TextField
+                    variant="standard"
                     value={editName}
                     onChange={(e) => setEditName(e.target.value)}
-                    className="flex-grow border border-gray-300 rounded-md px-2 py-1 mr-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                    fullWidth
+                    autoFocus
                   />
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => saveEdit(cat._id)}
-                      className="text-green-600 hover:text-green-800 font-semibold"
-                      aria-label="Save edit"
-                      title="Save"
-                    >
-                      ✔️
-                    </button>
-                    <button
-                      onClick={cancelEditing}
-                      className="text-red-600 hover:text-red-800 font-semibold"
-                      aria-label="Cancel edit"
-                      title="Cancel"
-                    >
-                      ❌
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <span>{cat.name}</span>
-                  <div className="flex space-x-3">
-                    <button
-                      onClick={() => startEditing(cat)}
-                      className="text-blue-600 hover:text-blue-800 font-semibold"
-                      aria-label="Edit category"
-                      title="Edit"
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      onClick={() => deleteCategory(cat._id)}
-                      className="text-red-600 hover:text-red-800 font-semibold"
-                      aria-label="Delete category"
-                      title="Delete"
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </>
-              )}
-            </li>
-          ))
-        )}
-      </ul>
-    </div>
+                ) : (
+                  <ListItemText primary={cat.name} />
+                )}
+              </ListItem>
+            ))
+          )}
+        </List>
+      </Paper>
+    </Box>
   );
 }

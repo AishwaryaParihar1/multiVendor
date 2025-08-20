@@ -3,123 +3,110 @@ import axios from "axios";
 import SweetAlertService from "../ui/SweetAlertService";
 import { PlusCircle, Loader2 } from "lucide-react";
 import Select from "react-select";
+import {
+  Box,
+  Typography,
+  TextField,
+  Checkbox,
+  FormControlLabel,
+  Button,
+  Stack,
+  Grid,
+  IconButton,
+  Paper,
+  useTheme,
+} from "@mui/material";
 
 export default function AddProductPage() {
+  const theme = useTheme();
   const [form, setForm] = useState({
     name: "",
     description: "",
     mrp: "",
     sellingPrice: "",
-    images: [], // holds Cloudinary URLs array
-    categories: [], // selected categories for product
+    images: [],
+    categories: [],
     isTrending: false,
     isNewArrival: false,
     isBestSeller: false,
   });
   const [uploading, setUploading] = useState(false);
-  const [allCategories, setAllCategories] = useState([]); // all available categories
+  const [allCategories, setAllCategories] = useState([]);
 
-  // Fetch available categories from backend on mount
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/category`
-        );
-        // Map categories to react-select format
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/category`);
         const options = res.data.map((cat) => ({
           value: cat.name,
           label: cat.name,
         }));
         setAllCategories(options);
-      } catch (err) {
+      } catch {
         SweetAlertService.showError("Failed to load categories");
       }
     }
     fetchCategories();
   }, []);
 
-  // Handle input fields except categories
   const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
-  // Handle categories multi-select change for react-select
   const handleCategoryChange = (selectedOptions) => {
-    setForm({
-      ...form,
+    setForm((prev) => ({
+      ...prev,
       categories: selectedOptions ? selectedOptions.map((o) => o.value) : [],
-    });
+    }));
   };
 
-  // Multiple Images Upload to Cloudinary (same as before)
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
     setUploading(true);
-
     try {
       const token = localStorage.getItem("token");
-      let uploadedImages = [];
-
+      const uploadedImages = [];
       for (const file of files) {
-        const formData = new FormData();
-        formData.append("image", file);
-        const res = await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/vendor/upload-image`,
-          formData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
+        const data = new FormData();
+        data.append("image", file);
+        const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/vendor/upload-image`, data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
         uploadedImages.push(res.data.imageUrl);
       }
-
-      setForm((prev) => ({
-        ...prev,
-        images: [...prev.images, ...uploadedImages],
-      }));
-
+      setForm((prev) => ({ ...prev, images: [...prev.images, ...uploadedImages] }));
       SweetAlertService.showSuccess("Images uploaded!");
     } catch {
       SweetAlertService.showError("Image upload failed!");
-    } finally {
-      setUploading(false);
     }
+    setUploading(false);
   };
 
-  // Remove image from preview
-  const handleRemoveImage = (idx) => {
+  const handleRemove = (index) => {
     setForm((prev) => ({
       ...prev,
-      images: prev.images.filter((_, i) => i !== idx),
+      images: prev.images.filter((_, i) => i !== index),
     }));
   };
 
-  // Handle submit with optional validation for prices
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (Number(form.sellingPrice) > Number(form.mrp)) {
       SweetAlertService.showError("Selling Price cannot be greater than MRP.");
       return;
     }
-
     if (form.categories.length === 0) {
       SweetAlertService.showError("Please select at least one category.");
       return;
     }
-
     try {
       const token = localStorage.getItem("token");
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/vendor/products`,
-        form,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/vendor/products`, form, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       SweetAlertService.showSuccess("Product added successfully!");
       setForm({
         name: "",
@@ -128,204 +115,204 @@ export default function AddProductPage() {
         sellingPrice: "",
         images: [],
         categories: [],
+        isTrending: false,
+        isNewArrival: false,
+        isBestSeller: false,
       });
     } catch {
       SweetAlertService.showError("Failed to add product.");
     }
   };
 
-  // Custom styles for react-select to harmonize with tailwind CSS theme
-  const customStyles = {
-    control: (provided, state) => ({
-      ...provided,
-      borderRadius: "0.5rem", // rounded-lg
-      borderColor: state.isFocused ? "#CBAF7A" : "#D1D5DB", // accent on focus, gray otherwise
-      boxShadow: state.isFocused ? "0 0 0 2px #CBAF7A" : "none",
-      "&:hover": {
-        borderColor: "#CBAF7A",
-      },
+  const customSelectStyles = {
+    control: (base, state) => ({
+      ...base,
+      backgroundColor: theme.palette.background.default,
+      borderColor: state.isFocused ? theme.palette.primary.dark : theme.palette.divider,
+      boxShadow: state.isFocused ? `0 0 0 2px ${theme.palette.primary.dark}` : null,
+      borderRadius: "8px",
       minHeight: "44px",
+      "&:hover": { borderColor: theme.palette.primary.dark },
     }),
-    multiValue: (provided) => ({
-      ...provided,
-      backgroundColor: "#8D6749", // primary
-      color: "white",
+    multiValue: (base) => ({
+      ...base,
+      backgroundColor: theme.palette.primary.main,
+      color: "#fff",
     }),
-    multiValueLabel: (provided) => ({
-      ...provided,
-      color: "white",
+    multiValueLabel: (base) => ({
+      ...base,
+      color: "#fff",
     }),
-    menu: (provided) => ({
-      ...provided,
-      borderRadius: "0.5rem",
-      zIndex: 9999, // Ensure dropdown overlays properly
+    menu: (base) => ({
+      ...base,
+      borderRadius: "8px",
+      zIndex: 9999,
     }),
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-8 bg-white rounded-xl shadow-lg p-8">
-      <h2 className="text-3xl font-bold text-primary mb-6 text-center flex items-center justify-center gap-2">
+    <Paper
+      sx={{
+        maxWidth: 720,
+        mx: "auto",
+        p: 4,
+        mt: 6,
+        bgcolor: theme.palette.background.paper,
+        borderRadius: 3,
+        boxShadow: 3,
+      }}
+    >
+      <Typography
+        variant="h4"
+        gutterBottom
+        sx={{ display: "flex", alignItems: "center", gap: 1, justifyContent: "center" }}
+      >
         <PlusCircle size={28} /> Add New Product
-      </h2>
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div>
-          <label className="block mb-2 font-semibold text-primary">
-            Product Name
-          </label>
-          <input
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            placeholder="Product Name"
-            required
-            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-accent transition"
-          />
-        </div>
-
-        <div>
-          <label className="block mb-2 font-semibold text-primary">
-            Description
-          </label>
-          <textarea
+      </Typography>
+      <Box component="form" onSubmit={handleSubmit} noValidate>
+        <Stack spacing={3}>
+          <TextField label="Product Name" name="name" value={form.name} onChange={handleChange} required fullWidth />
+          <TextField
+            label="Description"
             name="description"
             value={form.description}
             onChange={handleChange}
-            placeholder="Describe your product"
             required
+            multiline
             rows={3}
-            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-accent transition resize-none"
+            fullWidth
           />
-        </div>
-
-        <div>
-          <label className="block mb-2 font-semibold text-primary">
-            Maximum Retail Price (MRP)
-          </label>
-          <input
+          <TextField
+            label="Maximum Retail Price (MRP)"
             name="mrp"
+            type="number"
             value={form.mrp}
             onChange={handleChange}
-            type="number"
-            min="0"
-            step="0.01"
-            placeholder="MRP (₹)"
             required
-            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-accent transition"
+            fullWidth
+            inputProps={{ min: 0, step: "0.01" }}
           />
-        </div>
-
-        <div>
-          <label className="block mb-2 font-semibold text-primary">
-            Selling Price
-          </label>
-          <input
+          <TextField
+            label="Selling Price"
             name="sellingPrice"
+            type="number"
             value={form.sellingPrice}
             onChange={handleChange}
-            type="number"
-            min="0"
-            step="0.01"
-            placeholder="Selling Price (₹)"
             required
-            className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-accent transition"
+            fullWidth
+            inputProps={{ min: 0, step: "0.01" }}
           />
-        </div>
-
-        <div>
-          <label className="block mb-2 font-semibold text-primary">
-            Product Categories
-          </label>
-          <Select
-            isMulti
-            options={allCategories}
-            value={allCategories.filter((c) =>
-              form.categories.includes(c.value)
-            )}
-            onChange={handleCategoryChange}
-            placeholder="Select categories..."
-            styles={customStyles}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <label className="flex items-center gap-2 font-semibold text-accent">
-            <input
-              type="checkbox"
-              checked={form.isTrending}
-              onChange={(e) =>
-                setForm({ ...form, isTrending: e.target.checked })
-              }
+          <Box>
+            <Typography variant="subtitle1" gutterBottom>
+              Categories
+            </Typography>
+            <Select
+              isMulti
+              options={allCategories}
+              value={allCategories.filter((c) => form.categories.includes(c.value))}
+              onChange={handleCategoryChange}
+              styles={customSelectStyles}
+              placeholder="Select categories..."
             />
-            Trending
-          </label>
-          <label className="flex items-center gap-2 font-semibold text-accent">
-            <input
-              type="checkbox"
-              checked={form.isNewArrival}
-              onChange={(e) =>
-                setForm({ ...form, isNewArrival: e.target.checked })
-              }
-            />
-            New Arrival
-          </label>
-          <label className="flex items-center gap-2 font-semibold text-accent">
-            <input
-              type="checkbox"
-              checked={form.isBestSeller}
-              onChange={(e) =>
-                setForm({ ...form, isBestSeller: e.target.checked })
-              }
-            />
-            Best Seller
-          </label>
-        </div>
-
-        <div>
-          <label className="block mb-2 font-semibold text-primary">
-            Upload Images
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleImageUpload}
-            className="w-full p-2 border rounded-lg bg-background"
-          />
-          {uploading && (
-            <div className="mt-2 flex items-center gap-2 text-accent">
-              <Loader2 className="animate-spin" /> Uploading...
-            </div>
-          )}
-          {form.images.length > 0 && (
-            <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {form.images.map((img, idx) => (
-                <div key={idx} className="relative group">
-                  <img
-                    src={img}
-                    alt={`product-${idx}`}
-                    className="rounded-xl border shadow h-32 object-cover w-full"
+          </Box>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={4}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={form.isTrending}
+                    onChange={(e) => setForm({ ...form, isTrending: e.target.checked })}
+                    color="primary"
                   />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveImage(idx)}
-                    className="absolute top-2 right-2 bg-red-500 text-white px-2 py-0.5 rounded-full shadow opacity-80 hover:opacity-100"
+                }
+                label="Trending"
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={form.isNewArrival}
+                    onChange={(e) => setForm({ ...form, isNewArrival: e.target.checked })}
+                    color="primary"
+                  />
+                }
+                label="New Arrival"
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={form.isBestSeller}
+                    onChange={(e) => setForm({ ...form, isBestSeller: e.target.checked })}
+                    color="primary"
+                  />
+                }
+                label="Best Seller"
+              />
+            </Grid>
+          </Grid>
+          <Box>
+            <Button
+              variant="contained"
+              component="label"
+              disabled={uploading}
+              startIcon={uploading ? <Loader2 className="animate-spin" /> : null}
+            >
+              Upload Images
+              <input hidden multiple accept="image/*" type="file" onChange={handleImageUpload} />
+            </Button>
+            {form.images.length > 0 && (
+              <Grid container spacing={2} sx={{ mt: 2, justifyContent: "center" }}>
+                {form.images.map((img, idx) => (
+                  <Grid
+                    item
+                    xs={3}
+                    sm={2}
+                    key={idx}
+                    sx={{
+                      position: "relative",
+                      display: "flex",
+                      justifyContent: "center",
+                    }}
                   >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <button
-          type="submit"
-          disabled={uploading}
-          className="w-full py-3 font-semibold text-white rounded-lg bg-primary hover:bg-secondary transition-colors text-lg"
-        >
-          {uploading ? "Please wait..." : "Add Product"}
-        </button>
-      </form>
-    </div>
+                    <img
+                      src={img}
+                      alt={`img-${idx}`}
+                      style={{ width: 80, height: 80, borderRadius: 12, objectFit: "cover" }}
+                    />
+                    <IconButton
+                      size="small"
+                      onClick={() => handleRemove(idx)}
+                      sx={{
+                        position: "absolute",
+                        top: 4,
+                        right: 4,
+                        bgcolor: "error.main",
+                        color: "common.white",
+                        "&:hover": { bgcolor: "error.dark" },
+                      }}
+                    >
+                      ✕
+                    </IconButton>
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+          </Box>
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            disabled={uploading}
+            fullWidth
+            sx={{ mt: 3, py: 1.8, fontWeight: "bold" }}
+          >
+            {uploading ? "Uploading..." : "Add Product"}
+          </Button>
+        </Stack>
+      </Box>
+    </Paper>
   );
 }

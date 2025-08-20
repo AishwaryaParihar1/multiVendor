@@ -1,7 +1,15 @@
-
-
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css"; 
+
+// ✅ Custom CSS tweak
+const toastOffsetStyle = document.createElement("style");
+toastOffsetStyle.innerHTML = `
+  .swal2-top-end {
+    top: 55px !important;  /* 👈 upar se 15px ka gap */
+    right: 15px !important;
+  }
+`;
+document.head.appendChild(toastOffsetStyle);
 
 const SweetAlertService = {
   showSuccess: (title, text = "", timer = 2000) => {

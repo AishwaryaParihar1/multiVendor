@@ -1,25 +1,37 @@
 import React, { useEffect, useState } from "react";
-import SweetAlertService from "../ui/SweetAlertService"; // Adjust path as per your project structure
 import axios from "axios";
+import {
+  Box,
+  Typography,
+  Paper,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Button,
+  CircularProgress,
+  Stack,
+  useTheme,
+} from "@mui/material";
+import SweetAlertService from "../ui/SweetAlertService";
 
-const VendorApprovalPage = () => {
+export default function VendorApprovalPage() {
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const theme = useTheme();
 
   const fetchVendors = async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/admin/vendors/pending`,
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/vendors/pending`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setVendors(res.data);
-      setLoading(false);
-    } catch (err) {
+    } catch {
       SweetAlertService.showError("Error!", "Failed to fetch vendors.");
+    } finally {
       setLoading(false);
     }
   };
@@ -41,68 +53,80 @@ const VendorApprovalPage = () => {
         `${import.meta.env.VITE_API_URL}/api/admin/vendors/${action}/${id}`,
         {},
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       SweetAlertService.showSuccess(`Vendor ${action}d successfully!`);
       fetchVendors();
-    } catch (err) {
+    } catch {
       SweetAlertService.showError("Error!", `Vendor ${action} failed.`);
     }
   };
 
   return (
-    <div className="p-6 bg-gray-100 overflow-x-auto w-full">
-      <h2 className="text-xl font-bold text-primary mb-4">Vendor Approvals</h2>
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <table className="w-full bg-white rounded-md shadow overflow-hidden">
-          <thead>
-            <tr>
-              <th className="text-left px-4 py-2">Name</th>
-              <th className="text-left px-4 py-2">Business Name</th>
-              <th className="text-left px-4 py-2">Email</th>
-              <th className="text-left px-4 py-2">Phone</th>
-              <th className="text-center px-4 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {vendors.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="text-center py-6 text-secondary">
-                  No pending vendors
-                </td>
-              </tr>
-            ) : (
-              vendors.map((vendor) => (
-                <tr key={vendor._id} className="border-b hover:bg-background">
-                  <td className="px-4 py-2">{vendor.name}</td>
-                  <td className="px-4 py-2">{vendor.businessName}</td>
-                  <td className="px-4 py-2">{vendor.email}</td>
-                  <td className="px-4 py-2">{vendor.phone || "-"}</td>
-                  <td className="px-4 py-2 flex gap-2 justify-center">
-                    <button
-                      className="bg-primary text-white py-1 px-3 rounded hover:bg-secondary transition"
-                      onClick={() => handleAction(vendor._id, "approve")}
-                    >
-                      Approve
-                    </button>
-                    <button
-                      className="bg-error text-white py-1 px-3 rounded hover:bg-secondary transition"
-                      onClick={() => handleAction(vendor._id, "reject")}
-                    >
-                      Reject
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      )}
-    </div>
-  );
-};
+    <Box sx={{ p: { xs: 2, md: 4 }, width: "100%", maxWidth: 1400, mx: "auto" }}>
+      <Typography variant="h5" fontWeight="bold" mb={3} color={theme.palette.primary.main} align="center">
+        Vendor Approvals
+      </Typography>
 
-export default VendorApprovalPage;
+      {loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
+          <CircularProgress color="primary" />
+        </Box>
+      ) : (
+        <Paper sx={{ overflowX: "auto" }}>
+          <Table>
+            <TableHead sx={{ backgroundColor: theme.palette.grey[100] }}>
+              <TableRow>
+                <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Business Name</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Email</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Phone</TableCell>
+                <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+
+            <TableBody>
+              {vendors.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} align="center" sx={{ fontStyle: "italic", color: theme.palette.text.secondary, py: 6 }}>
+                    No pending vendors
+                  </TableCell>
+                </TableRow>
+              ) : (
+                vendors.map((vendor) => (
+                  <TableRow key={vendor._id} hover>
+                    <TableCell>{vendor.name}</TableCell>
+                    <TableCell>{vendor.businessName}</TableCell>
+                    <TableCell>{vendor.email}</TableCell>
+                    <TableCell>{vendor.phone || "-"}</TableCell>
+                    <TableCell align="center">
+                      <Stack direction="row" spacing={1} justifyContent="center">
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          size="small"
+                          onClick={() => handleAction(vendor._id, "approve")}
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="error"
+                          size="small"
+                          onClick={() => handleAction(vendor._id, "reject")}
+                        >
+                          Reject
+                        </Button>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </Paper>
+      )}
+    </Box>
+  );
+}

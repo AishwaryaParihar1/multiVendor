@@ -1,11 +1,13 @@
 import React from 'react'
 import Header from './Header'
 import HomeSections from './HomeSections'
+import HomeHeader from './HomeHeader'
 
 const HomePage = () => {
   return (
     <>
-   <Header/>
+    <HomeHeader/>
+   {/* <Header/> */}
    <HomeSections/>
     </>
 

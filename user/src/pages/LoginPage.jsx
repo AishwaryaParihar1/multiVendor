@@ -1,78 +1,140 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import SweetAlertService from "../components/ui/SweetAlertService";
+import profile from "../assets/profilelogin.svg";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Stack,
+  Paper,
+  Avatar,
+  useTheme,
+} from "@mui/material";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const theme = useTheme();
 
-const handleLogin = async (e) => {
-  e.preventDefault();
-  try {
-    const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, { email, password });
-    const { token, user } = res.data;
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, { email, password });
+      const { token, user } = res.data;
 
-localStorage.setItem("token", token);
-localStorage.setItem("role", user.role);
-localStorage.setItem("userName", user.name || user.email);
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", user.role);
+      localStorage.setItem("userName", user.name || user.email);
+      window.dispatchEvent(new Event("storage"));
 
-
-window.dispatchEvent(new Event('storage'));
-
-
-    // Redirect logic:
-    if (user.role === "customer") {
-      window.location.href = "/";
-    } else if (user.role === "vendor") {
-      window.location.href = "/vendor/dashboard";
-    } else if (user.role === "admin") {
-      window.location.href = "/admin/dashboard";
+      // Redirect logic:
+      if (user.role === "customer") {
+        window.location.href = "/";
+      } else if (user.role === "vendor") {
+        window.location.href = "/vendor/dashboard";
+      } else if (user.role === "admin") {
+        window.location.href = "/admin/dashboard";
+      }
+    } catch (err) {
+      SweetAlertService.showError("Login Failed", err.response?.data?.message || "Invalid credentials");
     }
-  } catch (err) {
-    // handle error as before
-  }
-};
-
+  };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
-        <h2 className="text-2xl font-bold text-center text-primary">Welcome Back</h2>
-        <form onSubmit={handleLogin} className="space-y-4">
-          {/* Email */}
-          <input
-            type="email"
-            placeholder="Email Address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full px-4 py-2 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent"
-          />
-          {/* Password */}
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full px-4 py-2 border rounded-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent"
-          />
-          {/* Login Button */}
-          <button
+    <Box
+      sx={{
+        minHeight: "100vh",
+        bgcolor: theme.palette.background.default,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        px: 2,
+      }}
+    >
+      <Paper
+        sx={{
+          maxWidth: 400,
+          width: "100%",
+          p: 5,
+          borderRadius: 3,
+          boxShadow: 3,
+          textAlign: "center",
+          bgcolor: theme.palette.background.paper,
+        }}
+      >
+        <Avatar
+          src={profile}
+          alt="Profile"
+          sx={{
+            width: 80,
+            height: 80,
+            mx: "auto",
+            mb: 3,
+          }}
+        />
+        <Typography variant="h5" mb={3} fontWeight="bold" color="primary">
+          Welcome Back
+        </Typography>
+        <form onSubmit={handleLogin}>
+          <Stack spacing={3}>
+            <TextField
+              type="email"
+              label="Email Address"
+              variant="outlined"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              fullWidth
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: "transparent",
+                  "&.Mui-focused": {
+                    backgroundColor: "transparent",
+                  },
+                },
+              }}
+            />
+            <TextField
+              type="password"
+              label="Password"
+              variant="outlined"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              fullWidth
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: "transparent",
+                  "&.Mui-focused": {
+                    backgroundColor: "transparent",
+                  },
+                },
+              }}
+            />
+          </Stack>
+          <Button
             type="submit"
-            className="w-full py-2 font-semibold text-white rounded-lg bg-primary hover:bg-secondary transition-colors duration-300"
+            variant="contained"
+            color="primary"
+            size="large"
+            fullWidth
+            sx={{ mt: 3, fontWeight: "bold" }}
           >
             Login
-          </button>
-          {/* Register Link */}
-          <p className="text-sm text-center text-gray-500">
-            Don't have an account?{" "}
-            <a href="/register" className="text-accent hover:underline">
-              Register
-            </a>
-          </p>
+          </Button>
         </form>
-      </div>
-    </div>
+        <Typography variant="body2" color="textSecondary" mt={3}>
+          Don’t have an account?{" "}
+          <a
+            href="/register"
+            style={{ color: theme.palette.primary.main, textDecoration: "underline" }}
+          >
+            Register
+          </a>
+        </Typography>
+      </Paper>
+    </Box>
   );
 }
