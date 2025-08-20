@@ -14,8 +14,15 @@ import {
   Grid,
   IconButton,
   Paper,
+  MenuItem,
   useTheme,
 } from "@mui/material";
+
+const statusOptions = [
+  { value: "active", label: "Active" },
+  { value: "inactive", label: "Inactive" },
+  { value: "out-of-stock", label: "Out of Stock" },
+];
 
 export default function AddProductPage() {
   const theme = useTheme();
@@ -26,6 +33,11 @@ export default function AddProductPage() {
     sellingPrice: "",
     images: [],
     categories: [],
+    subCategory: "",
+    stock: "",
+    status: "active",
+    discount: "",
+    isDeleted: false,
     isTrending: false,
     isNewArrival: false,
     isBestSeller: false,
@@ -59,6 +71,15 @@ export default function AddProductPage() {
     }));
   };
 
+  const handleStatusChange = (e) => {
+    setForm((prev) => ({ ...prev, status: e.target.value }));
+  };
+
+  const handleCheckboxChange = (e) => {
+    const { name, checked } = e.target;
+    setForm((prev) => ({ ...prev, [name]: checked }));
+  };
+
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -69,12 +90,16 @@ export default function AddProductPage() {
       for (const file of files) {
         const data = new FormData();
         data.append("image", file);
-        const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/vendor/upload-image`, data, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        const res = await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/vendor/upload-image`,
+          data,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
         uploadedImages.push(res.data.imageUrl);
       }
       setForm((prev) => ({ ...prev, images: [...prev.images, ...uploadedImages] }));
@@ -104,7 +129,13 @@ export default function AddProductPage() {
     }
     try {
       const token = localStorage.getItem("token");
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/vendor/products`, form, {
+      // convert stock and discount to number types or zero
+      const productData = {
+        ...form,
+        stock: form.stock ? Number(form.stock) : 0,
+        discount: form.discount ? Number(form.discount) : 0,
+      };
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/vendor/products`, productData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       SweetAlertService.showSuccess("Product added successfully!");
@@ -115,6 +146,11 @@ export default function AddProductPage() {
         sellingPrice: "",
         images: [],
         categories: [],
+        subCategory: "",
+        stock: "",
+        status: "active",
+        discount: "",
+        isDeleted: false,
         isTrending: false,
         isNewArrival: false,
         isBestSeller: false,
@@ -169,6 +205,7 @@ export default function AddProductPage() {
       >
         <PlusCircle size={28} /> Add New Product
       </Typography>
+
       <Box component="form" onSubmit={handleSubmit} noValidate>
         <Stack spacing={3}>
           <TextField label="Product Name" name="name" value={form.name} onChange={handleChange} required fullWidth />
@@ -177,18 +214,17 @@ export default function AddProductPage() {
             name="description"
             value={form.description}
             onChange={handleChange}
-            required
             multiline
             rows={3}
             fullWidth
           />
+
           <TextField
             label="Maximum Retail Price (MRP)"
             name="mrp"
             type="number"
             value={form.mrp}
             onChange={handleChange}
-            required
             fullWidth
             inputProps={{ min: 0, step: "0.01" }}
           />
@@ -198,10 +234,58 @@ export default function AddProductPage() {
             type="number"
             value={form.sellingPrice}
             onChange={handleChange}
-            required
             fullWidth
             inputProps={{ min: 0, step: "0.01" }}
           />
+
+
+          <TextField
+            label="Stock"
+            name="stock"
+            type="number"
+            value={form.stock}
+            onChange={handleChange}
+            fullWidth
+            inputProps={{ min: 0 }}
+          />
+
+          <TextField
+            label="Discount"
+            name="discount"
+            type="number"
+            value={form.discount}
+            onChange={handleChange}
+            fullWidth
+            inputProps={{ min: 0, max: 100 }}
+          />
+
+          <TextField
+            select
+            label="Status"
+            name="status"
+            value={form.status}
+            onChange={handleStatusChange}
+            fullWidth
+          >
+            {statusOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </TextField>
+
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={form.isDeleted}
+                onChange={handleCheckboxChange}
+                name="isDeleted"
+                color="primary"
+              />
+            }
+            label="Mark as Deleted"
+          />
+
           <Box>
             <Typography variant="subtitle1" gutterBottom>
               Categories
@@ -215,6 +299,16 @@ export default function AddProductPage() {
               placeholder="Select categories..."
             />
           </Box>
+
+          
+          <TextField
+            label="Sub Category"
+            name="subCategory"
+            value={form.subCategory}
+            onChange={handleChange}
+            fullWidth
+          />
+
           <Grid container spacing={2}>
             <Grid item xs={12} sm={4}>
               <FormControlLabel
@@ -253,6 +347,7 @@ export default function AddProductPage() {
               />
             </Grid>
           </Grid>
+
           <Box>
             <Button
               variant="contained"
@@ -263,6 +358,7 @@ export default function AddProductPage() {
               Upload Images
               <input hidden multiple accept="image/*" type="file" onChange={handleImageUpload} />
             </Button>
+
             {form.images.length > 0 && (
               <Grid container spacing={2} sx={{ mt: 2, justifyContent: "center" }}>
                 {form.images.map((img, idx) => (
@@ -301,6 +397,7 @@ export default function AddProductPage() {
               </Grid>
             )}
           </Box>
+
           <Button
             type="submit"
             variant="contained"

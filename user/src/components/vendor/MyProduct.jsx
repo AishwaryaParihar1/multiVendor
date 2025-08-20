@@ -17,6 +17,7 @@ import {
   Avatar,
   CircularProgress,
   useTheme,
+  useMediaQuery,
 } from "@mui/material";
 
 export default function MyProduct({ sidebarCollapsed }) {
@@ -25,7 +26,8 @@ export default function MyProduct({ sidebarCollapsed }) {
   const theme = useTheme();
   const navigate = useNavigate();
 
-  // Calculate drawer width based on sidebar collapsed state
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const drawerWidth = sidebarCollapsed ? 72 : 240;
 
   const fetchProducts = async () => {
@@ -82,7 +84,7 @@ export default function MyProduct({ sidebarCollapsed }) {
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-        <CircularProgress color="primary" />
+        <CircularProgress />
       </Box>
     );
   }
@@ -91,21 +93,18 @@ export default function MyProduct({ sidebarCollapsed }) {
     <Box
       sx={{
         flexGrow: 1,
-        ml: `${drawerWidth}px`,
-        p: { xs: 2, md: 4 },
-        transition: "margin 0.3s ease",
+        ml: isMobile ? 0 : `${drawerWidth}px`,
+        p: { xs: 1, md: 3 },
         minHeight: "100vh",
         bgcolor: theme.palette.background.default,
+        width: "100%",
+        boxSizing: "border-box",
       }}
     >
       <Paper
         elevation={4}
         sx={{
           width: "100%",
-          boxShadow: theme.shadows[4],
-          overflowX: "auto",
-          bgcolor: theme.palette.background.paper,
-          p: { xs: 1, md: 3 },
         }}
       >
         <Typography
@@ -113,7 +112,7 @@ export default function MyProduct({ sidebarCollapsed }) {
           component="h2"
           sx={{
             textAlign: "center",
-            mb: 3,
+            my: 3,
             fontWeight: "bold",
             color: theme.palette.primary.main,
           }}
@@ -126,67 +125,93 @@ export default function MyProduct({ sidebarCollapsed }) {
             No products found.
           </Box>
         ) : (
-          <TableContainer>
-            <Table sx={{ minWidth: 650, width: "100%" }} aria-label="products table" size="medium">
-              <TableHead sx={{ bgcolor: theme.palette.background.default }}>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>MRP</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Selling Price</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Categories</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Images</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {products.map((p) => (
-                  <TableRow key={p._id} hover>
-                    <TableCell>{p.name}</TableCell>
-                    <TableCell
-                      sx={{ maxWidth: 300, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
-                    >
-                      {p.description}
-                    </TableCell>
-                    <TableCell>₹{p.mrp}</TableCell>
-                    <TableCell>₹{p.sellingPrice}</TableCell>
-                    <TableCell>
-                      {p.categories && p.categories.length > 0
-                        ? p.categories.join(", ")
-                        : <Typography color="text.secondary" fontStyle="italic">No categories</Typography>}
-                    </TableCell>
-                    <TableCell>
-                      {p.images && p.images.length > 0 ? (
-                        <Box sx={{ display: "flex", gap: 1 }}>
-                          {p.images.map((img, idx) => (
-                            <Avatar
-                              key={idx}
-                              src={img}
-                              variant="rounded"
-                              sx={{ width: 40, height: 40, border: `1px solid ${theme.palette.divider}` }}
-                              alt={`${p.name}-${idx}`}
-                            />
-                          ))}
-                        </Box>
-                      ) : (
-                        <Typography color="text.secondary" fontStyle="italic">
-                          No images
-                        </Typography>
-                      )}
-                    </TableCell>
-                    <TableCell sx={{ textAlign: "center" }}>
-                      <IconButton aria-label="edit" color="primary" onClick={() => handleEdit(p._id)}>
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton aria-label="delete" color="error" onClick={() => handleDelete(p._id)}>
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </TableCell>
+          <Box sx={{ overflowX: "auto" }}>
+            <TableContainer>
+              <Table
+                sx={{
+                  minWidth: isMobile ? 600 : 900,
+                  width: "100%",
+                  tableLayout: "auto",
+                }}
+                aria-label="products table"
+                size="medium"
+              >
+                <TableHead sx={{ bgcolor: theme.palette.background.default }}>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: "bold" }}>Name</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Description</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>MRP</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Selling Price</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Categories</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Sub Category</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Stock</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Discount (%)</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Deleted</TableCell>
+                    <TableCell sx={{ fontWeight: "bold" }}>Images</TableCell>
+                    <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>Actions</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+
+                <TableBody>
+                  {products.map((p) => (
+                    <TableRow key={p._id} hover>
+                      <TableCell sx={{ whiteSpace: "normal", wordBreak: "break-word" }}>{p.name}</TableCell>
+                      <TableCell
+                        sx={{
+                          maxWidth: 300,
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                        title={p.description}
+                      >
+                        {p.description ?? ""}
+                      </TableCell>
+                      <TableCell>{p.mrp ?? "-"}</TableCell>
+                      <TableCell>{p.sellingPrice ?? "-"}</TableCell>
+                      <TableCell>
+                        {p.categories && p.categories.length > 0
+                          ? p.categories.join(", ")
+                          : <Typography color="text.secondary" fontStyle="italic">No categories</Typography>}
+                      </TableCell>
+                      <TableCell>{p.subCategory || <Typography color="text.secondary" fontStyle="italic">-</Typography>}</TableCell>
+                      <TableCell>{typeof p.stock === "number" ? p.stock : <Typography color="text.secondary" fontStyle="italic">-</Typography>}</TableCell>
+                      <TableCell>{p.status || <Typography color="text.secondary" fontStyle="italic">-</Typography>}</TableCell>
+                      <TableCell>{p.discount ? `${p.discount}%` : "-"}</TableCell>
+                      <TableCell>{p.isDeleted ? "Yes" : "No"}</TableCell>
+                      <TableCell>
+                        {p.images && p.images.length > 0 ? (
+                          <Box sx={{ display: "flex", gap: 1 }}>
+                            {p.images.map((img, idx) => (
+                              <Avatar
+                                key={idx}
+                                src={img}
+                                variant="rounded"
+                                sx={{ width: 40, height: 40, border: `1px solid ${theme.palette.divider}` }}
+                                alt={`${p.name}-${idx}`}
+                              />
+                            ))}
+                          </Box>
+                        ) : (
+                          <Typography color="text.secondary" fontStyle="italic">No images</Typography>
+                        )}
+                      </TableCell>
+                      <TableCell sx={{ textAlign: "center", whiteSpace: "nowrap" }}>
+                        <IconButton aria-label="edit" color="primary" onClick={() => handleEdit(p._id)}>
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton aria-label="delete" color="error" onClick={() => handleDelete(p._id)}>
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
         )}
       </Paper>
     </Box>

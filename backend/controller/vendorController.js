@@ -1,5 +1,4 @@
 const User = require("../models/User");
-
 const Product = require("../models/Product");
 
 exports.addProduct = async (req, res) => {
@@ -12,10 +11,16 @@ exports.addProduct = async (req, res) => {
       sellingPrice,
       images,
       categories,
+      subCategory,
+      stock,
+      status,
+      discount,
+      isDeleted,
       isTrending,
       isNewArrival,
       isBestSeller,
     } = req.body;
+
     const newProduct = new Product({
       name,
       description,
@@ -24,6 +29,11 @@ exports.addProduct = async (req, res) => {
       images,
       vendor: vendorId,
       categories,
+      subCategory: subCategory || null,
+      stock: stock || 0,
+      status: status || "active",
+      discount: discount || 0,
+      isDeleted: !!isDeleted,
       isTrending: !!isTrending,
       isNewArrival: !!isNewArrival,
       isBestSeller: !!isBestSeller,
@@ -32,6 +42,7 @@ exports.addProduct = async (req, res) => {
     await newProduct.save();
     res.json({ message: "Product added!", product: newProduct });
   } catch (err) {
+    console.error("Add product error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -55,13 +66,17 @@ exports.getVendorProfile = async (req, res) => {
   }
 };
 
-// controllers/vendorController.js
 exports.getVendorProducts = async (req, res) => {
   try {
     const vendorId = req.user._id;
-    const products = await Product.find({ vendor: vendorId }); // vendor ke products
+    // Exclude soft deleted products
+    const products = await Product.find({ vendor: vendorId, isDeleted: false })
+      .populate("vendor", "name businessName email")
+      .sort({ createdAt: -1 }); // Optional: latest first
+
     res.json(products);
   } catch (err) {
+    console.error("Get vendor products error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -70,10 +85,14 @@ exports.deleteProduct = async (req, res) => {
   try {
     const vendorId = req.user._id;
     const productId = req.params.id;
-    const product = await Product.findOneAndDelete({
-      _id: productId,
-      vendor: vendorId,
-    });
+
+    // Soft delete instead of hard delete (recommended)
+    const product = await Product.findOneAndUpdate(
+      { _id: productId, vendor: vendorId },
+      { isDeleted: true },
+      { new: true }
+    );
+
     if (!product) {
       return res
         .status(404)
@@ -81,6 +100,7 @@ exports.deleteProduct = async (req, res) => {
     }
     res.json({ message: "Product deleted" });
   } catch (err) {
+    console.error("Delete product error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -96,6 +116,11 @@ exports.updateProduct = async (req, res) => {
       sellingPrice,
       images,
       categories,
+      subCategory,
+      stock,
+      status,
+      discount,
+      isDeleted,
       isTrending,
       isNewArrival,
       isBestSeller,
@@ -110,6 +135,11 @@ exports.updateProduct = async (req, res) => {
         sellingPrice,
         images,
         categories,
+        subCategory: subCategory || null,
+        stock: stock || 0,
+        status: status || "active",
+        discount: discount || 0,
+        isDeleted: !!isDeleted,
         isTrending: !!isTrending,
         isNewArrival: !!isNewArrival,
         isBestSeller: !!isBestSeller,
@@ -125,6 +155,7 @@ exports.updateProduct = async (req, res) => {
 
     res.json({ message: "Product updated", product });
   } catch (err) {
+    console.error("Update product error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -133,14 +164,22 @@ exports.getSingleProduct = async (req, res) => {
   try {
     const vendorId = req.user._id;
     const productId = req.params.id;
-    const product = await Product.findOne({ _id: productId, vendor: vendorId });
+
+    const product = await Product.findOne({
+      _id: productId,
+      vendor: vendorId,
+      isDeleted: false,
+    }).populate("vendor", "name businessName email");
+
     if (!product) {
       return res
         .status(404)
         .json({ message: "Product not found or access denied", product: null });
     }
+
     res.json({ product });
   } catch (err) {
+    console.error("Get single product error:", err);
     res.status(500).json({ message: "Server error", product: null });
   }
 };
