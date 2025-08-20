@@ -17,7 +17,6 @@ import {
   Avatar,
   CircularProgress,
   useTheme,
-  useMediaQuery,
 } from "@mui/material";
 
 export default function MyProduct({ sidebarCollapsed }) {
@@ -25,8 +24,6 @@ export default function MyProduct({ sidebarCollapsed }) {
   const [loading, setLoading] = useState(true);
   const theme = useTheme();
   const navigate = useNavigate();
-
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const drawerWidth = sidebarCollapsed ? 72 : 240;
 
@@ -93,32 +90,31 @@ export default function MyProduct({ sidebarCollapsed }) {
     <Box
       sx={{
         flexGrow: 1,
-        ml: isMobile ? 0 : `${drawerWidth}px`,
+        ml: `${drawerWidth}px`,
         p: { xs: 1, md: 3 },
         minHeight: "100vh",
         bgcolor: theme.palette.background.default,
-        width: "100%",
-        boxSizing: "border-box",
       }}
     >
       <Paper
         elevation={4}
         sx={{
           width: "100%",
+          bgcolor: theme.palette.background.paper,
         }}
       >
-        <Typography
+        {/* <Typography
           variant="h4"
           component="h2"
           sx={{
             textAlign: "center",
-            my: 3,
+            m: 3,
             fontWeight: "bold",
             color: theme.palette.primary.main,
           }}
         >
           My Products
-        </Typography>
+        </Typography> */}
 
         {products.length === 0 ? (
           <Box sx={{ p: 4, textAlign: "center", color: theme.palette.text.secondary }}>
@@ -129,9 +125,10 @@ export default function MyProduct({ sidebarCollapsed }) {
             <TableContainer>
               <Table
                 sx={{
-                  minWidth: isMobile ? 600 : 900,
+                  minWidth: 900,
                   width: "100%",
                   tableLayout: "auto",
+                  wordBreak: "break-word",
                 }}
                 aria-label="products table"
                 size="medium"
@@ -172,9 +169,13 @@ export default function MyProduct({ sidebarCollapsed }) {
                       <TableCell>{p.mrp ?? "-"}</TableCell>
                       <TableCell>{p.sellingPrice ?? "-"}</TableCell>
                       <TableCell>
-                        {p.categories && p.categories.length > 0
-                          ? p.categories.join(", ")
-                          : <Typography color="text.secondary" fontStyle="italic">No categories</Typography>}
+                        {p.categories && p.categories.length > 0 ? (
+                          p.categories.join(", ")
+                        ) : (
+                          <Typography color="text.secondary" fontStyle="italic">
+                            No categories
+                          </Typography>
+                        )}
                       </TableCell>
                       <TableCell>{p.subCategory || <Typography color="text.secondary" fontStyle="italic">-</Typography>}</TableCell>
                       <TableCell>{typeof p.stock === "number" ? p.stock : <Typography color="text.secondary" fontStyle="italic">-</Typography>}</TableCell>
@@ -195,7 +196,9 @@ export default function MyProduct({ sidebarCollapsed }) {
                             ))}
                           </Box>
                         ) : (
-                          <Typography color="text.secondary" fontStyle="italic">No images</Typography>
+                          <Typography color="text.secondary" fontStyle="italic">
+                            No images
+                          </Typography>
                         )}
                       </TableCell>
                       <TableCell sx={{ textAlign: "center", whiteSpace: "nowrap" }}>
