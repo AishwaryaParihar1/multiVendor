@@ -30,7 +30,7 @@ export default function CheckoutPage() {
     country: "",
     postalCode: "",
     phone: "",
-    paymentMethod: "cod", // cod=Cash On Delivery, card=Credit/Debit Card
+    paymentMethod: "cod",
   });
 
   useEffect(() => {
@@ -133,246 +133,272 @@ export default function CheckoutPage() {
   return (
     <Box
       sx={{
-        maxWidth: 900,
-        mx: "auto",
-        p: { xs: 3, md: 6 },
-        bgcolor: "background.paper",
-        borderRadius: 2,
-        boxShadow: 3,
-        mt: { xs: 5, md: 10 },
+        width: "100%",
+        minHeight: "89vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        bgcolor: theme.palette.background.default,
       }}
     >
-      <Typography
-        variant="h4"
-        fontWeight="bold"
-        textAlign="center"
-        color="primary.main"
-        mb={6}
-      >
-        Checkout
-      </Typography>
-
       <Box
         sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-          gap: 6,
-          justifyContent: { xs: "center", md: "unset" }, // Center form on small screens
+          maxWidth: 1100,
+          width: "100%",
+          mx: "auto",
+          py: { xs: 3, md: 4 },
+          px: { xs: 1, sm: 4, md: 6 },
+          bgcolor: "background.paper",
+          borderRadius: 2,
+          boxShadow: 3,
+          mt: { xs: 4, md: 8 },
         }}
       >
-        {/* Shipping Details Form */}
+        <Typography
+          variant="h4"
+          fontWeight="bold"
+          textAlign="center"
+          color="primary.main"
+          mb={6}
+        >
+          Checkout
+        </Typography>
+
         <Box
-          component="form"
-          noValidate
-          autoComplete="off"
           sx={{
-            width: { xs: "100%", sm: 400 }, // Limit width and center on small screens
-            mx: { xs: "auto", md: 0 },
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+            gap: 6,
+            alignItems: "center",      // Vertically center content
+            minHeight: "55vh",         // Makes UI balanced
           }}
         >
-          <Typography variant="h6" fontWeight="600" mb={3}>
-            Shipping Details
-          </Typography>
-
-          <TextField
-            fullWidth
-            label="Full Name"
-            name="fullName"
-            value={form.fullName}
-            onChange={handleChange}
-            margin="normal"
-            variant="outlined"
-            required
-          />
-          <TextField
-            fullWidth
-            label="Address"
-            name="address"
-            value={form.address}
-            onChange={handleChange}
-            margin="normal"
-            variant="outlined"
-            multiline
-            rows={3}
-            required
-          />
-          <TextField
-            fullWidth
-            label="City"
-            name="city"
-            value={form.city}
-            onChange={handleChange}
-            margin="normal"
-            variant="outlined"
-            required
-          />
-          <TextField
-            fullWidth
-            label="State/Province"
-            name="state"
-            value={form.state}
-            onChange={handleChange}
-            margin="normal"
-            variant="outlined"
-            required
-          />
-          <TextField
-            fullWidth
-            label="Country"
-            name="country"
-            value={form.country}
-            onChange={handleChange}
-            margin="normal"
-            variant="outlined"
-            required
-          />
-          <TextField
-            fullWidth
-            label="Postal Code"
-            name="postalCode"
-            value={form.postalCode}
-            onChange={handleChange}
-            margin="normal"
-            variant="outlined"
-            required
-          />
-          <TextField
-            fullWidth
-            label="Phone Number"
-            name="phone"
-            value={form.phone}
-            onChange={handleChange}
-            margin="normal"
-            variant="outlined"
-            required
-          />
-
-          <FormControl component="fieldset" sx={{ mt: 4 }}>
-            <FormLabel component="legend" sx={{ mb: 2, fontWeight: "600" }}>
-              Payment Method
-            </FormLabel>
-            <RadioGroup
-              name="paymentMethod"
-              value={form.paymentMethod}
-              onChange={handleChange}
-            >
-              <FormControlLabel
-                value="cod"
-                control={<Radio />}
-                label="Cash on Delivery"
-              />
-              <FormControlLabel
-                value="card"
-                control={<Radio />}
-                label="Credit/Debit Card"
-              />
-            </RadioGroup>
-          </FormControl>
-        </Box>
-
-        {/* Order Summary */}
-        <Box>
-          <Typography variant="h6" fontWeight="600" mb={3}>
-            Order Summary
-          </Typography>
-
+          {/* Shipping Details Form */}
           <Box
+            component="form"
+            noValidate
+            autoComplete="off"
             sx={{
-              maxHeight: "60vh",
-              overflowY: "auto",
-              border: `1px solid ${theme.palette.divider}`,
-              borderRadius: 1,
-              px: 2,
-              py: 1,
-              mb: 4,
+              width: "100%",
+              maxWidth: 430,
+              mx: "auto",
+              alignSelf: "center",    // Center this column
+              bgcolor: "transparent",
             }}
           >
-            {cart.items.map(({ product, quantity }) => (
-              <Box
-                key={product._id}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                  py: 2,
-                  borderBottom: `1px solid ${theme.palette.divider}`,
-                  "&:last-child": {
-                    borderBottom: "none",
-                  },
-                }}
+            <Typography variant="h6" fontWeight="600" mb={3}>
+              Shipping Details
+            </Typography>
+
+            <TextField
+              fullWidth
+              label="Full Name"
+              name="fullName"
+              value={form.fullName}
+              onChange={handleChange}
+              margin="normal"
+              variant="outlined"
+              required
+            />
+            <TextField
+              fullWidth
+              label="Address"
+              name="address"
+              value={form.address}
+              onChange={handleChange}
+              margin="normal"
+              variant="outlined"
+              multiline
+              rows={3}
+              required
+            />
+            <TextField
+              fullWidth
+              label="City"
+              name="city"
+              value={form.city}
+              onChange={handleChange}
+              margin="normal"
+              variant="outlined"
+              required
+            />
+            <TextField
+              fullWidth
+              label="State/Province"
+              name="state"
+              value={form.state}
+              onChange={handleChange}
+              margin="normal"
+              variant="outlined"
+              required
+            />
+            <TextField
+              fullWidth
+              label="Country"
+              name="country"
+              value={form.country}
+              onChange={handleChange}
+              margin="normal"
+              variant="outlined"
+              required
+            />
+            <TextField
+              fullWidth
+              label="Postal Code"
+              name="postalCode"
+              value={form.postalCode}
+              onChange={handleChange}
+              margin="normal"
+              variant="outlined"
+              required
+            />
+            <TextField
+              fullWidth
+              label="Phone Number"
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              margin="normal"
+              variant="outlined"
+              required
+            />
+
+            <FormControl component="fieldset" sx={{ mt: 4 }}>
+              <FormLabel component="legend" sx={{ mb: 2, fontWeight: "600" }}>
+                Payment Method
+              </FormLabel>
+              <RadioGroup
+                name="paymentMethod"
+                value={form.paymentMethod}
+                onChange={handleChange}
               >
-                <Box
-                  component="img"
-                  src={product.images?.[0] || "/placeholder.png"}
-                  alt={product.name}
-                  sx={{
-                    width: 64,
-                    height: 64,
-                    objectFit: "cover",
-                    borderRadius: 1,
-                    flexShrink: 0,
-                  }}
+                <FormControlLabel
+                  value="cod"
+                  control={<Radio />}
+                  label="Cash on Delivery"
                 />
-                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                <FormControlLabel
+                  value="card"
+                  control={<Radio />}
+                  label="Credit/Debit Card"
+                />
+              </RadioGroup>
+            </FormControl>
+          </Box>
+
+          {/* Order Summary */}
+          <Box
+            sx={{
+              alignSelf: "center",         // Center this column
+              width: "100%",
+              maxWidth: 440,
+              mx: "auto",
+            }}
+          >
+            <Typography variant="h6" fontWeight="600" mb={3}>
+              Order Summary
+            </Typography>
+
+            <Box
+              sx={{
+                maxHeight: "60vh",
+                overflowY: "auto",
+                border: `1px solid ${theme.palette.divider}`,
+                borderRadius: 1,
+                px: 2,
+                py: 1,
+                mb: 4,
+                bgcolor: "background.default",
+              }}
+            >
+              {cart.items.map(({ product, quantity }) => (
+                <Box
+                  key={product._id}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                    py: 2,
+                    borderBottom: `1px solid ${theme.palette.divider}`,
+                    "&:last-child": {
+                      borderBottom: "none",
+                    },
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src={product.images?.[0] || "/placeholder.png"}
+                    alt={product.name}
+                    sx={{
+                      width: 64,
+                      height: 64,
+                      objectFit: "cover",
+                      borderRadius: 1,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                    <Typography
+                      fontWeight="600"
+                      noWrap
+                      title={product.name}
+                      sx={{ fontSize: "1rem" }}
+                    >
+                      {product.name}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      noWrap
+                      title={product.description}
+                      sx={{ fontSize: "0.85rem" }}
+                    >
+                      {product.description}
+                    </Typography>
+                    <Typography variant="body2" fontWeight="bold" sx={{ mt: 0.5 }}>
+                      Qty: {quantity}
+                    </Typography>
+                  </Box>
                   <Typography
-                    fontWeight="600"
-                    noWrap
-                    title={product.name}
-                    sx={{ fontSize: "1rem" }}
+                    fontWeight="bold"
+                    sx={{ whiteSpace: "nowrap", minWidth: 75 }}
                   >
-                    {product.name}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    noWrap
-                    title={product.description}
-                    sx={{ fontSize: "0.85rem" }}
-                  >
-                    {product.description}
-                  </Typography>
-                  <Typography variant="body2" fontWeight="bold" sx={{ mt: 0.5 }}>
-                    Qty: {quantity}
+                    ₹{(product.sellingPrice * quantity).toFixed(2)}
                   </Typography>
                 </Box>
-                <Typography
-                  fontWeight="bold"
-                  sx={{ whiteSpace: "nowrap", minWidth: 75 }}
-                >
-                  ₹{(product.sellingPrice * quantity).toFixed(2)}
-                </Typography>
-              </Box>
-            ))}
+              ))}
+            </Box>
+
+            <Divider sx={{ mb: 3 }} />
+
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 3,
+              }}
+            >
+              <Typography variant="h5" fontWeight="bold" color="text.primary">
+                Total:
+              </Typography>
+              <Typography variant="h5" fontWeight="bold" color="text.primary">
+                ₹{totalAmount.toFixed(2)}
+              </Typography>
+            </Box>
+
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              size="large"
+              onClick={placeOrder}
+              disabled={placingOrder}
+              sx={{ fontWeight: 600, fontSize: "1.1rem", py: 1.8 }}
+            >
+              {placingOrder ? "Placing Order..." : "Place Order"}
+            </Button>
           </Box>
-
-          <Divider sx={{ mb: 3 }} />
-
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 3,
-            }}
-          >
-            <Typography variant="h5" fontWeight="bold" color="text.primary">
-              Total:
-            </Typography>
-            <Typography variant="h5" fontWeight="bold" color="text.primary">
-              ₹{totalAmount.toFixed(2)}
-            </Typography>
-          </Box>
-
-          <Button
-            variant="contained"
-            color="primary"
-            fullWidth
-            size="large"
-            onClick={placeOrder}
-            disabled={placingOrder}
-          >
-            {placingOrder ? "Placing Order..." : "Place Order"}
-          </Button>
         </Box>
       </Box>
     </Box>
