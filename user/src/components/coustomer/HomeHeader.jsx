@@ -8,8 +8,9 @@ import {
   useTheme,
 } from "@mui/material";
 import { gsap } from "gsap";
+import { useNavigate } from "react-router-dom";
 
-// TypingText component for typing animation
+// Typing animation for the main heading
 function TypingText({ text, speed = 120, loop = false }) {
   const [displayedText, setDisplayedText] = useState("");
   const [index, setIndex] = useState(0);
@@ -41,9 +42,9 @@ export default function HomeHeader() {
   const containerRef = useRef(null);
   const leftRef = useRef(null);
   const rightRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Starting with opacity 0 and y=40 for container animation
     gsap.set(containerRef.current, { opacity: 0, y: 40 });
     gsap.set(leftRef.current, { opacity: 0, y: 20 });
     gsap.set(rightRef.current, { opacity: 0, y: 20 });
@@ -54,22 +55,15 @@ export default function HomeHeader() {
       .to(rightRef.current, { opacity: 1, y: 0, duration: 1 }, "-=0.4");
   }, []);
 
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (searchTerm.trim()) {
-      alert(`Search for: ${searchTerm.trim()}`);
-    }
-  };
-
   return (
     <Box
       component="header"
       ref={containerRef}
       sx={{
         backgroundColor: theme.palette.background.default,
-        height: "67vh",
-        py: 12,
-        px: { xs: 3, md: 6 },
+        height: { xs: "auto", md: "67vh" },
+        py: 8,
+        px: { xs: 2, md: 6 },
         maxWidth: 1120,
         mx: "auto",
         display: "flex",
@@ -79,11 +73,13 @@ export default function HomeHeader() {
         alignItems: "center",
         borderRadius: 3,
         overflow: "hidden",
+        mt: { xs: 2, sm: 4 },
       }}
       aria-label="Home Page Featured Header"
     >
+      {/* LEFT */}
       <Box
-        sx={{ flex: 1, maxWidth: { md: "50%" }, mb: { xs: 6, md: 0 } }}
+        sx={{ flex: 1, maxWidth: { md: "50%" }, mb: { xs: 5, md: 0 } }}
         ref={leftRef}
       >
         <Typography
@@ -92,7 +88,7 @@ export default function HomeHeader() {
           sx={{
             fontFamily: "'Cinzel', serif",
             fontWeight: 900,
-            fontSize: { xs: "2.75rem", md: "4rem" },
+            fontSize: { xs: "2.1rem", md: "4rem" },
             color: theme.palette.primary.main,
             mb: 3,
             letterSpacing: "0.1em",
@@ -143,34 +139,47 @@ export default function HomeHeader() {
             />
           ))}
         </Stack>
-
-        <Button
-          variant="contained"
-          size="large"
-          sx={{
-            px: 6,
-            py: 1.8,
-            fontWeight: 700,
-            fontSize: "1.1rem",
-            color: theme.palette.primary.contrastText,
-            backgroundColor: theme.palette.primary.main,
-            boxShadow: `0 6px 15px ${theme.palette.shadowColor ?? "rgba(0,64,48,0.3)"}`,
-            "&:hover": {
-              backgroundColor: theme.palette.primary.dark,
-              boxShadow: `0 8px 20px ${theme.palette.shadowColor ?? "rgba(0,64,48,0.5)"}`,
-            },
-          }}
-          aria-label="Explore services"
-          onClick={() => alert("Explore services clicked")}
-        >
-          Explore Services
-        </Button>
+        
+        {/* BUTTON -- always show here on small screens */}
+        <Box sx={{
+          mt: { xs: 4, md: 0 },
+          width: "100%",
+          textAlign: { xs: "center", md: "left" }
+        }}>
+          <Button
+            variant="contained"
+            size="large"
+            sx={{
+              px: 6,
+              py: 1.8,
+              fontWeight: 700,
+              fontSize: "1.1rem",
+              color: theme.palette.primary.contrastText,
+              backgroundColor: theme.palette.primary.main,
+              boxShadow: `0 6px 15px ${theme.palette.shadowColor ?? "rgba(0,64,48,0.3)"}`,
+              "&:hover": {
+                backgroundColor: theme.palette.primary.dark,
+                boxShadow: `0 8px 20px ${theme.palette.shadowColor ?? "rgba(0,64,48,0.5)"}`,
+              },
+            }}
+            aria-label="Explore shop"
+            onClick={() => navigate('/shop')}
+          >
+            Explore Shop
+          </Button>
+        </Box>
       </Box>
 
+      {/* RIGHT -- featured cards only on md+ screens */}
       <Stack
         direction="row"
         spacing={4}
-        sx={{ flex: 1, maxWidth: { md: "50%" } }}
+        sx={{
+          flex: 1,
+          maxWidth: { md: "50%" },
+          mb: { xs: 3, md: 0 },
+          display: { xs: "none", md: "flex" } // Hide on xs/sm
+        }}
         ref={rightRef}
         justifyContent="center"
       >
@@ -191,7 +200,7 @@ export default function HomeHeader() {
         >
           <Box
             component="img"
-            src="https://m.media-amazon.com/images/I/813q7VYwTDL.__AC_SY445_SX342_QL70_FMwebp_.jpg"
+            src="https://m.media-amazon.com/images/I/813q7VYwTDL._AC_SY445_SX342_QL70_FMwebp_.jpg"
             alt="Modern Lamp"
             loading="lazy"
             sx={{ width: "100%", height: 160, objectFit: "cover" }}
